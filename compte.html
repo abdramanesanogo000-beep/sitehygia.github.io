@@ -6,14 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="yames.css">
     <script src="yames.js" defer></script>
-    <title>Mon compte — Kality Care</title>
+    <title>Mon compte — Hygia</title>
 </head>
 
 <body>
+
+    <!-- BANDEAU COOKIES -->
+    <div id="bandeau-cookies"><style>#bandeau-cookies{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:14px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;z-index:9999;box-shadow:0 -2px 10px rgba(0,0,0,.08);transition:opacity .4s ease,transform .4s ease}#bandeau-cookies.fadeout{opacity:0;transform:translateY(20px);pointer-events:none}#bandeau-cookies p{margin:0;font-size:13px;color:#555;flex:1;min-width:200px;line-height:1.6}#bandeau-cookies a{color:#185FA5;text-decoration:underline}#btn-accepter-cookies{background:#185FA5;color:#fff;border:none;border-radius:5px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}#btn-accepter-cookies:hover{background:#0C447C}</style><p>Ce site utilise le stockage local de votre navigateur pour gérer votre panier et votre compte. Aucun cookie publicitaire. <a href="cookies.html">En savoir plus</a></p><button id="btn-accepter-cookies">J'ai compris</button><script>(function(){var b=document.getElementById('bandeau-cookies');if(localStorage.getItem('cookiesAcceptes')==='true'){b.style.display='none';return;}document.getElementById('btn-accepter-cookies').addEventListener('click',function(){localStorage.setItem('cookiesAcceptes','true');b.classList.add('fadeout');setTimeout(function(){b.style.display='none';},420);});})();</script></div>
+
     <nav>
         <div class="nav-left">
             <a href="index.html">
-                <img src="logo yames.png" alt="logo de yames">
+                <img src="img/logo yames.png" alt="logo de yames">
             </a>
         </div>
         <div class="nav-center">
@@ -73,7 +77,13 @@
             <a href="">facebook</a>
             <a href="">tiktok</a>
         </div>
-        <p>&copy; 2026 Kality Care. Tous droits réservés.</p>
+        <div class="footer-legal">
+            <a href="politique-confidentialite.html">Politique de confidentialité</a>
+            <a href="mentions-legales.html">Mentions légales</a>
+            <a href="cgv.html">CGV</a>
+            <a href="cookies.html">Cookies</a>
+        </div>
+        <p>&copy; 2026 Hygia. Tous droits réservés.</p>
     </footer>
 
 </body>

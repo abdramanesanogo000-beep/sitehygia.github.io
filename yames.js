@@ -4,38 +4,38 @@
 const BACKEND_URL = "https://nslookup-cluster1-bydepfo-mongodb-net.onrender.com";
 
 const produits = [
-    { id: 1, nom: "Tensiomètre manuel avec stéthoscope", prix: 10000, image: "tension metre manuel.png", categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre à brassard manuel livré avec stéthoscope monopavillon. Mesure fiable de la pression artérielle sans pile. Idéal pour les cabinets médicaux et pharmacies." },
-    { id: 2, nom: "Tensiomètre électronique automatique", prix: 23000, image: "img/mk01-435.jpg", categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre numérique automatique pour bras, brassard 22-36 cm. Un appui suffit pour obtenir tension et pouls. Écran large, facile à utiliser à domicile ou en clinique." },
-    { id: 3, nom: "Oxymètre de pouls", prix: 7000, image: "img/mk-x1906.jpg", categorie: "clinique", promo: false, stock: true, description: "Pince oxymètre à poser sur le doigt. Mesure la saturation en oxygène (SpO2) et le pouls en quelques secondes. Compact, sans douleur, indispensable pour le suivi respiratoire." },
-    { id: 4, nom: "Chaise médicale pivotante", prix: 19000, image: "img/mk03-423d.jpg", categorie: "clinique", promo: false, stock: true, description: "Chaise médicale pivotante, hauteur réglable de 44 à 56 cm, assise diamètre 33 cm. Confortable pour un usage prolongé en cabinet médical ou laboratoire." },
-    { id: 5, nom: "Plateau inox carré (instrumentation)", prix: 7000, image: "img/mk03-739.jpg", categorie: "clinique", promo: false, stock: true, description: "Plateau carré en acier inoxydable 304, dimensions 31x24x3,1 cm. Utilisé pour la présentation et la stérilisation des instruments médicaux en cabinet ou clinique." },
-    { id: 6, nom: "Microscope de laboratoire (40x à 1600x)", prix: 262000, image: "img/mk-107bn.jpg", categorie: "clinique", promo: false, stock: true, description: "Microscope optique professionnel, grossissement de 40x à 1600x (objectifs 4X, 10X, 40XS, 100XS). Livré en coffret. Pour laboratoires, cliniques et formations médicales." },
-    { id: 7, nom: "Centrifugeuse avec minuterie (6 tubes)", prix: 62000, image: "img/mk-800d.jpg", categorie: "clinique", promo: false, stock: true, description: "Centrifugeuse de laboratoire avec minuterie, capacité 6 tubes de 20 ml. Pour la séparation rapide des échantillons sanguins et biologiques." },
-    { id: 8, nom: "Centrifugeuse électrique haute vitesse (12 tubes)", prix: 112000, image: "img/mk-lc04a.jpg", categorie: "clinique", promo: false, stock: true, description: "Centrifugeuse électrique 12 tubes de 20 ml, vitesse jusqu'à 4000 tr/min avec affichage digital. Pour laboratoires à fort volume d'analyses. Compatible 110V/220V." },
-    { id: 9, nom: "Agitateur orbital de laboratoire", prix: 90000, image: "img/mk-201bd.jpg", categorie: "clinique", promo: false, stock: true, description: "Agitateur orbital vitesse réglable de 0 à 210 tr/min, minuterie 0-15 min ou mode continu. Pour le mélange homogène d'échantillons biologiques en laboratoire." },
-    { id: 10, nom: "Analyseur d'hémoglobine portable Mission HB", prix: 15000, image: "img/mk-ms01.jpg", categorie: "clinique", promo: false, stock: true, description: "Appareil portable de mesure du taux d'hémoglobine. Résultat en 15 secondes à partir de 10 µl de sang, sans réactif liquide. Idéal pour le dépistage rapide de l'anémie." },
-    { id: 11, nom: "Bandelettes Mission HB (boîte de 50)", prix: 24000, image: "img/mk-ms01s.jpg", categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 bandelettes pour analyseur d'hémoglobine Mission HB. Pour un dépistage rapide et fiable du taux d'hémoglobine en clinique ou laboratoire." },
-    { id: 12, nom: "Analyseur d'hémoglobine URIT H12", prix: 38000, image: "img/mk-urith12.jpg", categorie: "clinique", promo: false, stock: true, description: "Appareil de mesure du taux d'hémoglobine URIT H12, précis et fiable. Conçu pour un usage régulier en clinique ou laboratoire d'analyses médicales." },
-    { id: 13, nom: "Bandelettes URIT H12 (boîte de 50)", prix: 14000, image: "img/mk-h12.jpg", categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 bandelettes compatibles avec l'analyseur URIT H12. Pour mesurer rapidement le taux d'hémoglobine en laboratoire ou en clinique." },
-    { id: 14, nom: "Bandelettes urinaires 10 paramètres (URS-10A)", prix: 5000, image: "img/mk08-536-10a.jpg", categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 10 paramètres (glucose, protéines, pH, sang, leucocytes...). Résultat rapide pour le dépistage en clinique ou pharmacie." },
-    { id: 15, nom: "Bandelettes urinaires 3 paramètres (URS-3T)", prix: 3000, image: "img/mk08-536-3t.jpg", categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 3 paramètres essentiels. Solution économique pour un dépistage rapide en cabinet médical ou pharmacie." },
-    { id: 16, nom: "Pèse-personne mécanique médical", prix: 23500, image: "img/mk07-107.jpg", categorie: "clinique", promo: false, stock: true, description: "Balance mécanique pour cabinet médical (28,5x42,5x8,5 cm). Robuste, précise, sans pile nécessaire. Vendue par lot de 3 unités." },
-    { id: 17, nom: "Pèse-bébé avec toise intégrée", prix: 88000, image: "img/mk07-196b.jpg", categorie: "clinique", promo: false, stock: true, description: "Balance pour nourrisson avec toise intégrée, capacité 20 kg, précision 10 g. Indispensable pour le suivi de croissance en pédiatrie, maternité ou centre de santé." },
-    { id: 18, nom: "Toise souple bébé (PVC)", prix: 15000, image: "img/mk07-202.jpg", categorie: "consommable", promo: false, stock: true, description: "Mètre ruban souple en PVC pour mesurer la taille des nourrissons, de 20 à 99 cm. Léger, facile à désinfecter, idéal pour le suivi pédiatrique." },
-    { id: 19, nom: "Attelle de nuit (S/M/L)", prix: 11000, image: "img/mk07-835c.jpg", categorie: "clinique", promo: false, stock: true, description: "Attelle orthopédique de nuit disponible en tailles S, M et L. Maintien et immobilisation du pied pendant le repos pour une rééducation confortable." },
-    { id: 20, nom: "Abaisse-langue en bois (boîte de 50)", prix: 1500, image: "img/mk08-422.jpg", categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 abaisse-langues en bois (150x18x1,6 mm). Consommable à usage unique pour consultations en cabinet, clinique ou pharmacie." },
-    { id: 21, nom: "Kit de pinces chirurgicales (10 pièces)", prix: 28000, image: "img/mk-s34.jpg", categorie: "clinique", promo: false, stock: true, description: "Set de 10 pinces chirurgicales pour soins et interventions en clinique. Outils essentiels pour tout bloc de soins ou salle d'opération." },
-    { id: 22, nom: "Lames de bistouri n°23 (boîte de 100)", prix: 4000, image: "img/mk08-509.jpg", categorie: "consommable", promo: false, stock: true, description: "Boîte de 100 lames de bistouri en acier carbone, taille n°23. Stériles, à usage unique, pour interventions chirurgicales et soins en clinique." },
-    { id: 23, nom: "Ballon de réanimation pédiatrique", prix: 12000, image: "img/mk09-139-ped.jpg", categorie: "clinique", promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille pédiatrique, livré en coffret. Matériel d'urgence pour la ventilation manuelle des enfants en détresse respiratoire." },
-    { id: 24, nom: "Ballon de réanimation adulte", prix: 12000, image: "img/mk09-139-adu.jpg", categorie: "clinique", promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille adulte, livré en coffret. Indispensable pour la ventilation manuelle en réanimation et premiers secours." },
-    { id: 25, nom: "Tambour de stérilisation 170mm", prix: 9000, image: "img/mk03-720-170.jpg", categorie: "clinique", promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 170 mm. Pour le stockage stérile de compresses et consommables médicaux en clinique ou bloc opératoire." },
-    { id: 26, nom: "Tambour de stérilisation 200mm", prix: 11000, image: "img/mk03-720-200.jpg", categorie: "clinique", promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 200 mm. Format plus grand pour un stockage stérile en volume en clinique ou bloc opératoire." },
-    { id: 27, nom: "Portoir à tubes à essai (50 puits)", prix: 3000, image: "img/mk09-575.jpg", categorie: "clinique", promo: false, stock: true, description: "Râtelier pour tubes à essai de 12-13 mm, 50 emplacements. Pour une organisation rapide et sécurisée des échantillons en laboratoire d'analyses." },
-    { id: 28, nom: "Coton hydrophile (rouleau 100g)", prix: 1000, image: "img/mk08-402.jpg", categorie: "consommable", promo: false, stock: true, description: "Rouleau de coton hydrophile 100g (format 6x15). Consommable essentiel pour soins, pansements et désinfection en clinique, pharmacie ou à domicile." },
-    { id: 29, nom: "Test rapide Toxoplasmose", prix: 600, image: "img/mk08-540-toxo.jpg", categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la toxoplasmose sur sang total, sérum ou plasma. Résultat en quelques minutes, sans équipement spécial. Pour cliniques et laboratoires." },
-    { id: 30, nom: "Test rapide Rubéole IgG/IgM", prix: 700, image: "img/mk08-540-rubelle.jpg", categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la rubéole (IgG et IgM) sur sérum ou plasma. Outil de diagnostic essentiel pour le suivi prénatal et les cliniques." },
-    { id: 31, nom: "Test rapide Paludisme PF/PV", prix: 600, image: "img/mk08-540-malaria.jpg", categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide du paludisme (Plasmodium falciparum et vivax) sur sang total. Résultat fiable en minutes, adapté au contexte malien." },
-    { id: 32, nom: "Mannequin pédagogique d'accouchement", prix: 490000, image: "img/mk-xc402a.jpg", categorie: "clinique", promo: false, stock: true, description: "Modèle anatomique de simulation pour la formation aux techniques d'accouchement. Destiné aux écoles de santé, centres de formation de sages-femmes et structures médicales." },
+    { id: 1,  nom: "Tensiomètre manuel avec stéthoscope",              prix: 10000,  image: "img/tension metre manuel.jpg",                                              categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre à brassard manuel livré avec stéthoscope monopavillon. Mesure fiable de la pression artérielle sans pile. Idéal pour les cabinets médicaux et pharmacies." },
+    { id: 2,  nom: "Tensiomètre électronique automatique",             prix: 23000,  image: "img/tension metre electrique.webp",                                         categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre numérique automatique pour bras, brassard 22-36 cm. Un appui suffit pour obtenir tension et pouls. Écran large, facile à utiliser à domicile ou en clinique." },
+    { id: 3,  nom: "Oxymètre de pouls",                                prix: 7000,   image: "img/oxymetre de puls.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Pince oxymètre à poser sur le doigt. Mesure la saturation en oxygène (SpO2) et le pouls en quelques secondes. Compact, sans douleur, indispensable pour le suivi respiratoire." },
+    { id: 4,  nom: "Chaise médicale pivotante",                        prix: 19000,  image: "img/chaise medicale.avif",                                                  categorie: "clinique",    promo: false, stock: true, description: "Chaise médicale pivotante, hauteur réglable de 44 à 56 cm, assise diamètre 33 cm. Confortable pour un usage prolongé en cabinet médical ou laboratoire." },
+    { id: 5,  nom: "Plateau inox carré (instrumentation)",             prix: 7000,   image: "img/plateau care.jpg",                                                      categorie: "clinique",    promo: false, stock: true, description: "Plateau carré en acier inoxydable 304, dimensions 31x24x3,1 cm. Utilisé pour la présentation et la stérilisation des instruments médicaux en cabinet ou clinique." },
+    { id: 6,  nom: "Microscope de laboratoire (40x à 1600x)",          prix: 262000, image: "img/microscope biologique.avif",                                            categorie: "clinique",    promo: false, stock: true, description: "Microscope optique professionnel, grossissement de 40x à 1600x (objectifs 4X, 10X, 40XS, 100XS). Livré en coffret. Pour laboratoires, cliniques et formations médicales." },
+    { id: 7,  nom: "Centrifugeuse avec minuterie (6 tubes)",           prix: 62000,  image: "img/centrifugeuse.jpg",                                                     categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse de laboratoire avec minuterie, capacité 6 tubes de 20 ml. Pour la séparation rapide des échantillons sanguins et biologiques." },
+    { id: 8,  nom: "Centrifugeuse électrique haute vitesse (12 tubes)",prix: 112000, image: "img/centrifugeuse electrique.png",                                          categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse électrique 12 tubes de 20 ml, vitesse jusqu'à 4000 tr/min avec affichage digital. Pour laboratoires à fort volume d'analyses. Compatible 110V/220V." },
+    { id: 9,  nom: "Agitateur orbital de laboratoire",                 prix: 90000,  image: "img/agitateur de laboratoire.png",                                         categorie: "clinique",    promo: false, stock: true, description: "Agitateur orbital vitesse réglable de 0 à 210 tr/min, minuterie 0-15 min ou mode continu. Pour le mélange homogène d'échantillons biologiques en laboratoire." },
+    { id: 10, nom: "Analyseur d'hémoglobine portable Mission HB",      prix: 15000,  image: "img/lecteur d'hemoglobine mission hb.jpg",                                  categorie: "clinique",    promo: false, stock: true, description: "Appareil portable de mesure du taux d'hémoglobine. Résultat en 15 secondes à partir de 10 µl de sang, sans réactif liquide. Idéal pour le dépistage rapide de l'anémie." },
+    { id: 11, nom: "Bandelettes Mission HB (boîte de 50)",             prix: 24000,  image: "img/compteur d'hemoglobine mission hb.webp",                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 bandelettes pour analyseur d'hémoglobine Mission HB. Pour un dépistage rapide et fiable du taux d'hémoglobine en clinique ou laboratoire." },
+    { id: 12, nom: "Analyseur d'hémoglobine URIT H12",                 prix: 38000,  image: "img/lecteur d'hemoglobine urit12.png",                                      categorie: "clinique",    promo: false, stock: true, description: "Appareil de mesure du taux d'hémoglobine URIT H12, précis et fiable. Conçu pour un usage régulier en clinique ou laboratoire d'analyses médicales." },
+    { id: 13, nom: "Bandelettes URIT H12 (boîte de 50)",               prix: 14000,  image: "img/compteur d'hemoglobine urit12.png",                                     categorie: "consommable", promo: false, stock: true, description: "Boîte de 1O0 bandelettes compatibles avec l'analyseur URIT H12. Pour mesurer rapidement le taux d'hémoglobine en laboratoire ou en clinique." },
+    { id: 14, nom: "Bandelettes urinaires 10 paramètres (URS-10A)",    prix: 5000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 10 paramètres (glucose, protéines, pH, sang, leucocytes...). Résultat rapide pour le dépistage en clinique ou pharmacie." },
+    { id: 15, nom: "Bandelettes urinaires 3 paramètres (URS-3T)",      prix: 3000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 3 paramètres essentiels. Solution économique pour un dépistage rapide en cabinet médical ou pharmacie." },
+    { id: 16, nom: "Pèse-personne mécanique médical",                  prix: 23500,  image: "img/pese-personne balance.jpg",                                             categorie: "clinique",    promo: false, stock: true, description: "Balance mécanique pour cabinet médical (28,5x42,5x8,5 cm). Robuste, précise, sans pile nécessaire. Vendue par lot de 3 unités." },
+    { id: 17, nom: "Pèse-bébé avec toise intégrée",                    prix: 88000,  image: "img/tapis de mesure pour bebe.jpg",                                         categorie: "clinique",    promo: false, stock: true, description: "Balance pour nourrisson avec toise intégrée, capacité 20 kg, précision 10 g. Indispensable pour le suivi de croissance en pédiatrie, maternité ou centre de santé." },
+    { id: 18, nom: "Toise souple bébé (PVC)",                          prix: 15000,  image: "img/regle pour bebe.png",                                                   categorie: "clinique", promo: false, stock: true, description: "Mètre ruban souple en PVC pour mesurer la taille des nourrissons, de 20 à 99 cm. Léger, facile à désinfecter, idéal pour le suivi pédiatrique." },
+    { id: 19, nom: "Attelle de nuit (S/M/L)",                          prix: 11000,  image: "img/Orthèse de la cheville et du pied.jpg",                                 categorie: "clinique",    promo: false, stock: true, description: "Attelle orthopédique de nuit disponible en tailles S, M et L. Maintien et immobilisation du pied pendant le repos pour une rééducation confortable." },
+    { id: 20, nom: "Abaisse-langue en bois (boîte de 50)",             prix: 1500,   image: "img/tongue depressore.png",                                                 categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 abaisse-langues en bois (150x18x1,6 mm). Consommable à usage unique pour consultations en cabinet, clinique ou pharmacie." },
+    { id: 21, nom: "Kit de pinces chirurgicales (10 pièces)",          prix: 28000,  image: "img/kit de ciseaux de churirgie.png",                                       categorie: "clinique",    promo: false, stock: true, description: "Set de 10 pinces chirurgicales pour soins et interventions en clinique. Outils essentiels pour tout bloc de soins ou salle d'opération." },
+    { id: 22, nom: "Lames de bistouri n°23 (boîte de 100)",            prix: 4000,   image: "img/surirgicale blade.webp",                                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 100 lames de bistouri en acier carbone, taille n°23. Stériles, à usage unique, pour interventions chirurgicales et soins en clinique." },
+    { id: 23, nom: "Ballon de réanimation pédiatrique",                prix: 12000,  image: "img/respirateur manuel.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille pédiatrique, livré en coffret. Matériel d'urgence pour la ventilation manuelle des enfants en détresse respiratoire." },
+    { id: 24, nom: "Ballon de réanimation adulte",                     prix: 12000,  image: "img/respirateur manuel.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille adulte, livré en coffret. Indispensable pour la ventilation manuelle en réanimation et premiers secours." },
+    { id: 25, nom: "Tambour de stérilisation 170mm",                   prix: 9000,   image: "img/tambours de sterilisation.avif",                                        categorie: "clinique",    promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 170 mm. Pour le stockage stérile de compresses et consommables médicaux en clinique ou bloc opératoire." },
+    { id: 26, nom: "Tambour de stérilisation 200mm",                   prix: 11000,  image: "img/tambours de sterilisation.avif",                                        categorie: "clinique",    promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 200 mm. Format plus grand pour un stockage stérile en volume en clinique ou bloc opératoire." },
+    { id: 27, nom: "Portoir à tubes à essai (50 puits)",               prix: 3000,   image: "img/support a tube a essaie.webp",                                          categorie: "clinique",    promo: false, stock: true, description: "Râtelier pour tubes à essai de 12-13 mm, 50 emplacements. Pour une organisation rapide et sécurisée des échantillons en laboratoire d'analyses." },
+    { id: 28, nom: "Coton hydrophile (rouleau 100g)",                  prix: 1000,   image: "img/cotton en rouleau.webp",                                               categorie: "consommable", promo: false, stock: true, description: "Rouleau de coton hydrophile 100g (format 6x15). Consommable essentiel pour soins, pansements et désinfection en clinique, pharmacie ou à domicile." },
+    { id: 29, nom: "Test rapide Toxoplasmose",                         prix: 600,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la toxoplasmose sur sang total, sérum ou plasma. Résultat en quelques minutes, sans équipement spécial. Pour cliniques et laboratoires." },
+    { id: 30, nom: "Test rapide Rubéole IgG/IgM",                      prix: 700,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la rubéole (IgG et IgM) sur sérum ou plasma. Outil de diagnostic essentiel pour le suivi prénatal et les cliniques." },
+    { id: 31, nom: "Test rapide Paludisme PF/PV",                      prix: 600,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide du paludisme (Plasmodium falciparum et vivax) sur sang total. Résultat fiable en minutes, adapté au contexte malien." },
+    { id: 32, nom: "Mannequin pédagogique d'accouchement",             prix: 490000, image: "img/manequin d'accouchement.jpg",                                           categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique de simulation pour la formation aux techniques d'accouchement. Destiné aux écoles de santé, centres de formation de sages-femmes et structures médicales." },
 
 ];
 
@@ -43,9 +43,9 @@ const produits = [
 // 2. AFFICHAGE DES PRODUITS (accueil / catalogue)
 // ===========================================
 const PRODUITS_PAR_PAGE = 12;
-const PROMO_CODE = "YAMES5";
+const PROMO_CODE = "YAMES9";
 const PROMO_PERCENT = 5;
-const PROMO_VALID_DAYS = 14;
+const PROMO_VALID_DAYS = 300;
 const PROMO_APPLIED_KEY = "couponApplique";
 const PROMO_USAGE_KEY = "couponUsage";
 const PROMO_POPUP_KEY = "promoPopupSeen";
@@ -678,7 +678,9 @@ function afficherPanier() {
                 <button class="btn-plus" data-id="${produit.id}">+</button>
             </div>
             <div class="panier-item-total">${sousTotal.toLocaleString()} FCFA</div>
-            <button class="btn-remove" data-id="${produit.id}">🗑️</button>
+            <button class="btn-remove" data-id="${produit.id}" title="Retirer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
         `;
 
         container.appendChild(div);
@@ -862,7 +864,7 @@ async function confirmerCommande(methode) {
         console.warn("Commande non envoyée au backend", error);
     }
 
-    let message = "Bonjour, je confirme ma commande chez Kality Care :%0A";
+    let message = "Bonjour, je confirme ma commande chez Hygia :%0A";
 
     articles.forEach(item => {
         message += `- ${item.nom} x${item.quantite} (${item.sousTotal.toLocaleString()} FCFA)%0A`;
@@ -924,7 +926,7 @@ function afficherPageProduit() {
         return;
     }
 
-    document.title = produit.nom + " — Kality Care";
+    document.title = produit.nom + " — Hygia";
 
     container.innerHTML = `
         <div class="produit-detail-image">
@@ -938,7 +940,7 @@ function afficherPageProduit() {
             <button class="btn-add-cart" data-id="${produit.id}">Ajouter au panier</button>
 
             <section class="avantages-yames">
-                <h3>Les Avantages de Kality Care</h3>
+                <h3>Les Avantages de Hygia</h3>
                 <div class="avantages-yames-list">
                     <div class="avantage-item">
                         <span class="avantage-icon icon-truck"></span>
@@ -1375,6 +1377,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const produitFilterButtons = document.querySelectorAll(".filter-box-btn");
     const resetBtn = document.getElementById("reset-filtres");
 
+    // Pré-filtre depuis l'URL (?categorie= venant de l'accueil)
+    const urlParams = new URLSearchParams(window.location.search);
+    const categorieUrl = urlParams.get("categorie");
+    if (categorieUrl && filtresCategorie.length > 0) {
+        filtresCategorie.forEach(checkbox => {
+            if (checkbox.value === categorieUrl) checkbox.checked = true;
+        });
+        appliquerFiltres(true);
+    }
+
     if (rechercheNom) {
         const params = new URLSearchParams(window.location.search);
         const q = params.get("q");
@@ -1443,6 +1455,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const paymentDetails = document.getElementById("payment-details");
 
     if (btnPaiement) {
+        const livraisonForm = document.getElementById("livraison-form");
+
         btnPaiement.addEventListener("click", () => {
             const panier = getPanier();
             if (panier.length === 0) {
@@ -1450,8 +1464,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Étape 1 : afficher le formulaire et changer le bouton en "Payer"
+            if (livraisonForm && livraisonForm.style.display === "none") {
+                livraisonForm.style.display = "block";
+                livraisonForm.scrollIntoView({ behavior: "smooth" });
+                btnPaiement.textContent = "Payer";
+                btnPaiement.dataset.etape = "payer";
+                return;
+            }
+
+            // Étape 2 : valider le formulaire et ouvrir le modal
             if (!validerFormulaireLivraison()) {
-                document.querySelector(".livraison-form").scrollIntoView({ behavior: "smooth" });
+                livraisonForm.scrollIntoView({ behavior: "smooth" });
                 return;
             }
 
