@@ -1,7 +1,7 @@
 // ===========================================
 // 1. DONNÉES PRODUITS (source unique pour tout le site)
 // ===========================================
-const BACKEND_URL = "https://nslookup-cluster1-bydepfo-mongodb-net.onrender.com";
+const BACKEND_URL = "https://nslookup-cluster1-bydepfo-mongodb-net-1.onrender.com";
 
 const produits = [
     { id: 1,  nom: "Tensiomètre manuel avec stéthoscope",              prix: 10000,  image: "img/tension metre manuel.jpg",                                              categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre à brassard manuel livré avec stéthoscope monopavillon. Mesure fiable de la pression artérielle sans pile. Idéal pour les cabinets médicaux et pharmacies." },
@@ -13,9 +13,9 @@ const produits = [
     { id: 7,  nom: "Centrifugeuse avec minuterie (6 tubes)",           prix: 62000,  image: "img/centrifugeuse.jpg",                                                     categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse de laboratoire avec minuterie, capacité 6 tubes de 20 ml. Pour la séparation rapide des échantillons sanguins et biologiques." },
     { id: 8,  nom: "Centrifugeuse électrique haute vitesse (12 tubes)",prix: 112000, image: "img/centrifugeuse electrique.png",                                          categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse électrique 12 tubes de 20 ml, vitesse jusqu'à 4000 tr/min avec affichage digital. Pour laboratoires à fort volume d'analyses. Compatible 110V/220V." },
     { id: 9,  nom: "Agitateur orbital de laboratoire",                 prix: 90000,  image: "img/agitateur de laboratoire.png",                                         categorie: "clinique",    promo: false, stock: true, description: "Agitateur orbital vitesse réglable de 0 à 210 tr/min, minuterie 0-15 min ou mode continu. Pour le mélange homogène d'échantillons biologiques en laboratoire." },
-    { id: 10, nom: "Analyseur d'hémoglobine portable Mission HB",      prix: 15000,  image: "img/lecteur d'hemoglobine mission hb.jpg",                                  categorie: "clinique",    promo: false, stock: true, description: "Appareil portable de mesure du taux d'hémoglobine. Résultat en 15 secondes à partir de 10 µl de sang, sans réactif liquide. Idéal pour le dépistage rapide de l'anémie." },
+    { id: 10, nom: "Lecteur d'hémoglobine portable Mission HB",      prix: 15000,  image: "img/lecteur d'hemoglobine mission hb.jpg",                                  categorie: "clinique",    promo: false, stock: true, description: "Appareil portable de mesure du taux d'hémoglobine. Résultat en 15 secondes à partir de 10 µl de sang, sans réactif liquide. Idéal pour le dépistage rapide de l'anémie." },
     { id: 11, nom: "Bandelettes Mission HB (boîte de 50)",             prix: 24000,  image: "img/compteur d'hemoglobine mission hb.webp",                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 bandelettes pour analyseur d'hémoglobine Mission HB. Pour un dépistage rapide et fiable du taux d'hémoglobine en clinique ou laboratoire." },
-    { id: 12, nom: "Analyseur d'hémoglobine URIT H12",                 prix: 38000,  image: "img/lecteur d'hemoglobine urit12.png",                                      categorie: "clinique",    promo: false, stock: true, description: "Appareil de mesure du taux d'hémoglobine URIT H12, précis et fiable. Conçu pour un usage régulier en clinique ou laboratoire d'analyses médicales." },
+    { id: 12, nom: "Lecteur d'hémoglobine URIT H12",                 prix: 38000,  image: "img/lecteur d'hemoglobine urit12.png",                                      categorie: "clinique",    promo: false, stock: true, description: "Appareil de mesure du taux d'hémoglobine URIT H12, précis et fiable. Conçu pour un usage régulier en clinique ou laboratoire d'analyses médicales." },
     { id: 13, nom: "Bandelettes URIT H12 (boîte de 50)",               prix: 14000,  image: "img/compteur d'hemoglobine urit12.png",                                     categorie: "consommable", promo: false, stock: true, description: "Boîte de 1O0 bandelettes compatibles avec l'analyseur URIT H12. Pour mesurer rapidement le taux d'hémoglobine en laboratoire ou en clinique." },
     { id: 14, nom: "Bandelettes urinaires 10 paramètres (URS-10A)",    prix: 5000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 10 paramètres (glucose, protéines, pH, sang, leucocytes...). Résultat rapide pour le dépistage en clinique ou pharmacie." },
     { id: 15, nom: "Bandelettes urinaires 3 paramètres (URS-3T)",      prix: 3000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 3 paramètres essentiels. Solution économique pour un dépistage rapide en cabinet médical ou pharmacie." },
@@ -36,6 +36,9 @@ const produits = [
     { id: 30, nom: "Test rapide Rubéole IgG/IgM",                      prix: 700,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la rubéole (IgG et IgM) sur sérum ou plasma. Outil de diagnostic essentiel pour le suivi prénatal et les cliniques." },
     { id: 31, nom: "Test rapide Paludisme PF/PV",                      prix: 600,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide du paludisme (Plasmodium falciparum et vivax) sur sang total. Résultat fiable en minutes, adapté au contexte malien." },
     { id: 32, nom: "Mannequin pédagogique d'accouchement",             prix: 490000, image: "img/manequin d'accouchement.jpg",                                           categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique de simulation pour la formation aux techniques d'accouchement. Destiné aux écoles de santé, centres de formation de sages-femmes et structures médicales." },
+    { id: 33, nom: "Modèle anatomique du système urogénital masculin", prix: 85000,  image: "img/Modèle de système urogénital masculin.jpg",                             categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique détaillé du système urogénital masculin, en coupe. Support pédagogique idéal pour l'enseignement médical, les écoles de santé et les cabinets d'urologie." },
+    { id: 34, nom: "Modèle anatomique larynx, cœur et poumons",        prix: 95000,  image: "img/humain anatomique médical larynx cardiaque et pulmonaire modèle larynx l'exercice modèle.avif", categorie: "clinique", promo: false, stock: true, description: "Modèle anatomique du larynx, du cœur et des poumons, conçu pour l'exercice et la formation médicale. Idéal pour l'enseignement en écoles de santé et cliniques pédagogiques." },
+    { id: 35, nom: "Trousse portable d'injection intramusculaire",     prix: 32000,  image: "img/Trousse de pratique d'injection intramusculaire portable.webp",         categorie: "clinique",    promo: false, stock: true, description: "Trousse portable pour la pratique de l'injection intramusculaire. Outil de formation pratique destiné aux étudiants en santé et au personnel infirmier en apprentissage." },
 
 ];
 
@@ -1076,8 +1079,6 @@ function initRechercheLive() {
             return;
         }
 
-        // on calcule un score pour chaque produit, on élimine les scores nuls,
-        // puis on trie du plus pertinent au moins pertinent
         const resultats = produits
             .map(p => ({ produit: p, score: scorePertinence(texte, p.nom) }))
             .filter(r => r.score > 0)
@@ -1115,8 +1116,6 @@ function initRechercheLive() {
         }
     });
 
-
-    // Entrée ou clic sur 🔍 → redirige vers le catalogue filtré par ce texte
     input.closest("form").addEventListener("submit", (e) => {
         e.preventDefault();
         const texte = input.value.trim();
@@ -1336,9 +1335,44 @@ function enregistrerCommande(panier, methode, total) {
 // ===========================================
 // 5. INITIALISATION AU CHARGEMENT DE LA PAGE
 // ===========================================
+function initMobileMenu() {
+    const nav = document.querySelector("nav");
+    const navCenter = document.querySelector(".nav-center");
+    const navLeft = document.querySelector(".nav-left");
+    if (!nav || !navCenter || !navLeft) return;
+
+    const toggle = document.createElement("button");
+    toggle.className = "nav-toggle";
+    toggle.setAttribute("aria-label", "Menu");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.innerHTML = "<span class='bar'></span><span class='bar'></span><span class='bar'></span>";
+    navLeft.insertBefore(toggle, navLeft.firstChild);
+
+    toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = navCenter.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    navCenter.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", () => {
+            navCenter.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+        });
+    });
+
+    document.addEventListener("click", (e) => {
+        if (navCenter.classList.contains("open") && !nav.contains(e.target)) {
+            navCenter.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
     initPromoSystem();
+    initMobileMenu();
 
     const container = document.getElementById("product-container");
 

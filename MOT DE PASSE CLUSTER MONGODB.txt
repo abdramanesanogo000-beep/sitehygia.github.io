@@ -1,7 +1,8 @@
 UL2QpZ1KelfN5ufz
+Nouveau:YubVQiNuZlmspmVd
 
 NOM : abdramanesanogo000_db_user
-
+Nouveau:abdramanesanogo000_db_user
 mongobd : mongodb+srv://abdramanesanogo000_db_user:UL2QpZ1KelfN5ufz@cluster1.bydepfo.mongodb.net/
           
 
