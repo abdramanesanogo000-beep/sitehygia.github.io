@@ -899,8 +899,8 @@ async function confirmerCommande(methode) {
         console.warn("Commande non envoyée au backend", error);
     }
 
-    // ── ÉTAPE 2 : Initier le paiement CinetPay ──
-    // (Orange Money, Wave, Carte bancaire → tous via CinetPay)
+    // ── ÉTAPE 2 : Initier le paiement PayTech ──
+    // (Orange Money, Wave, Carte bancaire → tous via PayTech)
     try {
         const response = await fetch(`${BACKEND_URL}/api/paiement/initier`, {
             method: "POST",

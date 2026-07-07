@@ -232,7 +232,15 @@
                 etatEchec.style.display = "block";
             }
 
-            // CAS 1 : Retour CinetPay avec transaction à vérifier
+            const statut = params.get("statut");
+
+            // CAS 1 : Annulation directe depuis PayTech
+            if (statut === "annule" || statut === "cancel") {
+                afficherEchec();
+                return;
+            }
+
+            // CAS 2 : Retour PayTech avec transaction à vérifier
             if (transaction) {
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/paiement/verifier?transaction=${encodeURIComponent(transaction)}`);
@@ -253,18 +261,6 @@
                     console.error("Erreur de vérification du paiement :", error);
                     afficherEchec();
                 }
-                return;
-            }
-
-            // CAS 2 : Confirmation directe (paramètres passés dans l'URL)
-            if (numero) {
-                afficherSucces({
-                    numero,
-                    nom: params.get("nom"),
-                    methode: params.get("methode"),
-                    total: params.get("total"),
-                    paye: false
-                });
                 return;
             }
 
