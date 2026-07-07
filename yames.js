@@ -4,41 +4,41 @@
 const BACKEND_URL = "https://nslookup-cluster1-bydepfo-mongodb-net-1.onrender.com";
 
 const produits = [
-    { id: 1,  nom: "Tensiomètre manuel avec stéthoscope",              prix: 10000,  image: "img/tension metre manuel.jpg",                                              categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre à brassard manuel livré avec stéthoscope monopavillon. Mesure fiable de la pression artérielle sans pile. Idéal pour les cabinets médicaux et pharmacies." },
-    { id: 2,  nom: "Tensiomètre électronique automatique",             prix: 23000,  image: "img/tension metre electrique.webp",                                         categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre numérique automatique pour bras, brassard 22-36 cm. Un appui suffit pour obtenir tension et pouls. Écran large, facile à utiliser à domicile ou en clinique." },
-    { id: 3,  nom: "Oxymètre de pouls",                                prix: 7000,   image: "img/oxymetre de puls.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Pince oxymètre à poser sur le doigt. Mesure la saturation en oxygène (SpO2) et le pouls en quelques secondes. Compact, sans douleur, indispensable pour le suivi respiratoire." },
-    { id: 4,  nom: "Chaise médicale pivotante",                        prix: 19000,  image: "img/chaise medicale.avif",                                                  categorie: "clinique",    promo: false, stock: true, description: "Chaise médicale pivotante, hauteur réglable de 44 à 56 cm, assise diamètre 33 cm. Confortable pour un usage prolongé en cabinet médical ou laboratoire." },
-    { id: 5,  nom: "Plateau inox carré (instrumentation)",             prix: 7000,   image: "img/plateau care.jpg",                                                      categorie: "clinique",    promo: false, stock: true, description: "Plateau carré en acier inoxydable 304, dimensions 31x24x3,1 cm. Utilisé pour la présentation et la stérilisation des instruments médicaux en cabinet ou clinique." },
-    { id: 6,  nom: "Microscope de laboratoire (40x à 1600x)",          prix: 262000, image: "img/microscope biologique.avif",                                            categorie: "clinique",    promo: false, stock: true, description: "Microscope optique professionnel, grossissement de 40x à 1600x (objectifs 4X, 10X, 40XS, 100XS). Livré en coffret. Pour laboratoires, cliniques et formations médicales." },
-    { id: 7,  nom: "Centrifugeuse avec minuterie (6 tubes)",           prix: 62000,  image: "img/centrifugeuse.jpg",                                                     categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse de laboratoire avec minuterie, capacité 6 tubes de 20 ml. Pour la séparation rapide des échantillons sanguins et biologiques." },
+    { id: 1,  nom: "Tensiomètre manuel avec stéthoscope",              prix: 15000,  image: "img/tension metre manuel.jpg",                                              categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre à brassard manuel livré avec stéthoscope monopavillon. Mesure fiable de la pression artérielle sans pile. Idéal pour les cabinets médicaux et pharmacies." },
+    { id: 2,  nom: "Tensiomètre électronique automatique",             prix: 25000,  image: "img/tension metre electrique.webp",                                         categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre numérique automatique pour bras, brassard 22-36 cm. Un appui suffit pour obtenir tension et pouls. Écran large, facile à utiliser à domicile ou en clinique." },
+    { id: 3,  nom: "Oxymètre de pouls",                                prix: 10000,  image: "img/oxymetre de puls.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Pince oxymètre à poser sur le doigt. Mesure la saturation en oxygène (SpO2) et le pouls en quelques secondes. Compact, sans douleur, indispensable pour le suivi respiratoire." },
+    { id: 4,  nom: "Chaise médicale pivotante",                        prix: 30000,  image: "img/chaise medicale.avif",                                                  categorie: "clinique",    promo: false, stock: true, description: "Chaise médicale pivotante, hauteur réglable de 44 à 56 cm, assise diamètre 33 cm. Confortable pour un usage prolongé en cabinet médical ou laboratoire." },
+    { id: 5,  nom: "Plateau inox carré (instrumentation)",             prix: 10000,  image: "img/plateau care.jpg",                                                      categorie: "clinique",    promo: false, stock: true, description: "Plateau carré en acier inoxydable 304, dimensions 31x24x3,1 cm. Utilisé pour la présentation et la stérilisation des instruments médicaux en cabinet ou clinique." },
+    { id: 6,  nom: "Microscope de laboratoire (40x à 1600x)",          prix: 350000, image: "img/microscope biologique.avif",                                            categorie: "clinique",    promo: false, stock: true, description: "Microscope optique professionnel, grossissement de 40x à 1600x (objectifs 4X, 10X, 40XS, 100XS). Livré en coffret. Pour laboratoires, cliniques et formations médicales." },
+    { id: 7,  nom: "Centrifugeuse avec minuterie (6 tubes)",           prix: 65000,  image: "img/centrifugeuse.jpg",                                                     categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse de laboratoire avec minuterie, capacité 6 tubes de 20 ml. Pour la séparation rapide des échantillons sanguins et biologiques." },
     { id: 8,  nom: "Centrifugeuse électrique haute vitesse (12 tubes)",prix: 112000, image: "img/centrifugeuse electrique.png",                                          categorie: "clinique",    promo: false, stock: true, description: "Centrifugeuse électrique 12 tubes de 20 ml, vitesse jusqu'à 4000 tr/min avec affichage digital. Pour laboratoires à fort volume d'analyses. Compatible 110V/220V." },
-    { id: 9,  nom: "Agitateur orbital de laboratoire",                 prix: 90000,  image: "img/agitateur de laboratoire.png",                                         categorie: "clinique",    promo: false, stock: true, description: "Agitateur orbital vitesse réglable de 0 à 210 tr/min, minuterie 0-15 min ou mode continu. Pour le mélange homogène d'échantillons biologiques en laboratoire." },
-    { id: 10, nom: "Lecteur d'hémoglobine portable Mission HB",      prix: 15000,  image: "img/lecteur d'hemoglobine mission hb.jpg",                                  categorie: "clinique",    promo: false, stock: true, description: "Appareil portable de mesure du taux d'hémoglobine. Résultat en 15 secondes à partir de 10 µl de sang, sans réactif liquide. Idéal pour le dépistage rapide de l'anémie." },
-    { id: 11, nom: "Bandelettes Mission HB (boîte de 50)",             prix: 24000,  image: "img/compteur d'hemoglobine mission hb.webp",                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 bandelettes pour analyseur d'hémoglobine Mission HB. Pour un dépistage rapide et fiable du taux d'hémoglobine en clinique ou laboratoire." },
-    { id: 12, nom: "Lecteur d'hémoglobine URIT H12",                 prix: 38000,  image: "img/lecteur d'hemoglobine urit12.png",                                      categorie: "clinique",    promo: false, stock: true, description: "Appareil de mesure du taux d'hémoglobine URIT H12, précis et fiable. Conçu pour un usage régulier en clinique ou laboratoire d'analyses médicales." },
-    { id: 13, nom: "Bandelettes URIT H12 (boîte de 50)",               prix: 14000,  image: "img/compteur d'hemoglobine urit12.png",                                     categorie: "consommable", promo: false, stock: true, description: "Boîte de 1O0 bandelettes compatibles avec l'analyseur URIT H12. Pour mesurer rapidement le taux d'hémoglobine en laboratoire ou en clinique." },
-    { id: 14, nom: "Bandelettes urinaires 10 paramètres (URS-10A)",    prix: 5000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 10 paramètres (glucose, protéines, pH, sang, leucocytes...). Résultat rapide pour le dépistage en clinique ou pharmacie." },
-    { id: 15, nom: "Bandelettes urinaires 3 paramètres (URS-3T)",      prix: 3000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 3 paramètres essentiels. Solution économique pour un dépistage rapide en cabinet médical ou pharmacie." },
-    { id: 16, nom: "Pèse-personne mécanique médical",                  prix: 23500,  image: "img/pese-personne balance.jpg",                                             categorie: "clinique",    promo: false, stock: true, description: "Balance mécanique pour cabinet médical (28,5x42,5x8,5 cm). Robuste, précise, sans pile nécessaire. Vendue par lot de 3 unités." },
-    { id: 17, nom: "Pèse-bébé avec toise intégrée",                    prix: 88000,  image: "img/tapis de mesure pour bebe.jpg",                                         categorie: "clinique",    promo: false, stock: true, description: "Balance pour nourrisson avec toise intégrée, capacité 20 kg, précision 10 g. Indispensable pour le suivi de croissance en pédiatrie, maternité ou centre de santé." },
-    { id: 18, nom: "Toise souple bébé (PVC)",                          prix: 15000,  image: "img/regle pour bebe.png",                                                   categorie: "clinique", promo: false, stock: true, description: "Mètre ruban souple en PVC pour mesurer la taille des nourrissons, de 20 à 99 cm. Léger, facile à désinfecter, idéal pour le suivi pédiatrique." },
-    { id: 19, nom: "Attelle de nuit (S/M/L)",                          prix: 11000,  image: "img/Orthèse de la cheville et du pied.jpg",                                 categorie: "clinique",    promo: false, stock: true, description: "Attelle orthopédique de nuit disponible en tailles S, M et L. Maintien et immobilisation du pied pendant le repos pour une rééducation confortable." },
-    { id: 20, nom: "Abaisse-langue en bois (boîte de 50)",             prix: 1500,   image: "img/tongue depressore.png",                                                 categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 abaisse-langues en bois (150x18x1,6 mm). Consommable à usage unique pour consultations en cabinet, clinique ou pharmacie." },
-    { id: 21, nom: "Kit de pinces chirurgicales (10 pièces)",          prix: 28000,  image: "img/kit de ciseaux de churirgie.png",                                       categorie: "clinique",    promo: false, stock: true, description: "Set de 10 pinces chirurgicales pour soins et interventions en clinique. Outils essentiels pour tout bloc de soins ou salle d'opération." },
-    { id: 22, nom: "Lames de bistouri n°23 (boîte de 100)",            prix: 4000,   image: "img/surirgicale blade.webp",                                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 100 lames de bistouri en acier carbone, taille n°23. Stériles, à usage unique, pour interventions chirurgicales et soins en clinique." },
-    { id: 23, nom: "Ballon de réanimation pédiatrique",                prix: 12000,  image: "img/respirateur manuel.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille pédiatrique, livré en coffret. Matériel d'urgence pour la ventilation manuelle des enfants en détresse respiratoire." },
-    { id: 24, nom: "Ballon de réanimation adulte",                     prix: 12000,  image: "img/respirateur manuel.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille adulte, livré en coffret. Indispensable pour la ventilation manuelle en réanimation et premiers secours." },
-    { id: 25, nom: "Tambour de stérilisation 170mm",                   prix: 9000,   image: "img/tambours de sterilisation.avif",                                        categorie: "clinique",    promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 170 mm. Pour le stockage stérile de compresses et consommables médicaux en clinique ou bloc opératoire." },
-    { id: 26, nom: "Tambour de stérilisation 200mm",                   prix: 11000,  image: "img/tambours de sterilisation.avif",                                        categorie: "clinique",    promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 200 mm. Format plus grand pour un stockage stérile en volume en clinique ou bloc opératoire." },
-    { id: 27, nom: "Portoir à tubes à essai (50 puits)",               prix: 3000,   image: "img/support a tube a essaie.webp",                                          categorie: "clinique",    promo: false, stock: true, description: "Râtelier pour tubes à essai de 12-13 mm, 50 emplacements. Pour une organisation rapide et sécurisée des échantillons en laboratoire d'analyses." },
-    { id: 28, nom: "Coton hydrophile (rouleau 100g)",                  prix: 1000,   image: "img/cotton en rouleau.webp",                                               categorie: "consommable", promo: false, stock: true, description: "Rouleau de coton hydrophile 100g (format 6x15). Consommable essentiel pour soins, pansements et désinfection en clinique, pharmacie ou à domicile." },
-    { id: 29, nom: "Test rapide Toxoplasmose",                         prix: 600,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la toxoplasmose sur sang total, sérum ou plasma. Résultat en quelques minutes, sans équipement spécial. Pour cliniques et laboratoires." },
-    { id: 30, nom: "Test rapide Rubéole IgG/IgM",                      prix: 700,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la rubéole (IgG et IgM) sur sérum ou plasma. Outil de diagnostic essentiel pour le suivi prénatal et les cliniques." },
-    { id: 31, nom: "Test rapide Paludisme PF/PV",                      prix: 600,    image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide du paludisme (Plasmodium falciparum et vivax) sur sang total. Résultat fiable en minutes, adapté au contexte malien." },
-    { id: 32, nom: "Mannequin pédagogique d'accouchement",             prix: 490000, image: "img/manequin d'accouchement.jpg",                                           categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique de simulation pour la formation aux techniques d'accouchement. Destiné aux écoles de santé, centres de formation de sages-femmes et structures médicales." },
-    { id: 33, nom: "Modèle anatomique du système urogénital masculin", prix: 85000,  image: "img/Modèle de système urogénital masculin.jpg",                             categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique détaillé du système urogénital masculin, en coupe. Support pédagogique idéal pour l'enseignement médical, les écoles de santé et les cabinets d'urologie." },
-    { id: 34, nom: "Modèle anatomique larynx, cœur et poumons",        prix: 95000,  image: "img/humain anatomique médical larynx cardiaque et pulmonaire modèle larynx l'exercice modèle.avif", categorie: "clinique", promo: false, stock: true, description: "Modèle anatomique du larynx, du cœur et des poumons, conçu pour l'exercice et la formation médicale. Idéal pour l'enseignement en écoles de santé et cliniques pédagogiques." },
-    { id: 35, nom: "Trousse portable d'injection intramusculaire",     prix: 32000,  image: "img/Trousse de pratique d'injection intramusculaire portable.webp",         categorie: "clinique",    promo: false, stock: true, description: "Trousse portable pour la pratique de l'injection intramusculaire. Outil de formation pratique destiné aux étudiants en santé et au personnel infirmier en apprentissage." },
+    { id: 9,  nom: "Agitateur orbital de laboratoire",                 prix: 120000, image: "img/agitateur de laboratoire.png",                                         categorie: "clinique",    promo: false, stock: true, description: "Agitateur orbital vitesse réglable de 0 à 210 tr/min, minuterie 0-15 min ou mode continu. Pour le mélange homogène d'échantillons biologiques en laboratoire." },
+    { id: 10, nom: "Lecteur d'hémoglobine portable Mission HB",      prix: 150000, image: "img/lecteur d'hemoglobine mission hb.jpg",                                  categorie: "clinique",    promo: false, stock: true, description: "Appareil portable de mesure du taux d'hémoglobine. Résultat en 15 secondes à partir de 10 µl de sang, sans réactif liquide. Idéal pour le dépistage rapide de l'anémie." },
+    { id: 11, nom: "Bandelettes Mission HB (boîte de 50)",             prix: 35000,  image: "img/compteur d'hemoglobine mission hb.webp",                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 bandelettes pour analyseur d'hémoglobine Mission HB. Pour un dépistage rapide et fiable du taux d'hémoglobine en clinique ou laboratoire." },
+    { id: 12, nom: "Lecteur d'hémoglobine URIT H12",                 prix: 55000,  image: "img/lecteur d'hemoglobine urit12.png",                                      categorie: "clinique",    promo: false, stock: true, description: "Appareil de mesure du taux d'hémoglobine URIT H12, précis et fiable. Conçu pour un usage régulier en clinique ou laboratoire d'analyses médicales." },
+    { id: 13, nom: "Bandelettes URIT H12 (boîte de 50)",               prix: 25000,  image: "img/compteur d'hemoglobine urit12.png",                                     categorie: "consommable", promo: false, stock: true, description: "Boîte de 1O0 bandelettes compatibles avec l'analyseur URIT H12. Pour mesurer rapidement le taux d'hémoglobine en laboratoire ou en clinique." },
+    { id: 14, nom: "Bandelettes urinaires 10 paramètres (URS-10A)",    prix: 10000,  image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 10 paramètres (glucose, protéines, pH, sang, leucocytes...). Résultat rapide pour le dépistage en clinique ou pharmacie." },
+    { id: 15, nom: "Bandelettes urinaires 3 paramètres (URS-3T)",      prix: 6000,   image: "img/bandelette de test d'urine.jpg",                                        categorie: "consommable", promo: false, stock: true, description: "Bandelettes réactives pour analyse d'urine, 3 paramètres essentiels. Solution économique pour un dépistage rapide en cabinet médical ou pharmacie." },
+    { id: 16, nom: "Pèse-personne mécanique médical",                  prix: 35000,  image: "img/pese-personne balance.jpg",                                             categorie: "clinique",    promo: false, stock: true, description: "Balance mécanique pour cabinet médical (28,5x42,5x8,5 cm). Robuste, précise, sans pile nécessaire. Vendue par lot de 3 unités." },
+    { id: 17, nom: "Pèse-bébé avec toise intégrée",                    prix: 115000, image: "img/tapis de mesure pour bebe.jpg",                                         categorie: "clinique",    promo: false, stock: true, description: "Balance pour nourrisson avec toise intégrée, capacité 20 kg, précision 10 g. Indispensable pour le suivi de croissance en pédiatrie, maternité ou centre de santé." },
+    { id: 18, nom: "Toise souple bébé (PVC)",                          prix: 25000,  image: "img/regle pour bebe.png",                                                   categorie: "clinique", promo: false, stock: true, description: "Mètre ruban souple en PVC pour mesurer la taille des nourrissons, de 20 à 99 cm. Léger, facile à désinfecter, idéal pour le suivi pédiatrique." },
+    { id: 19, nom: "Attelle de nuit (S/M/L)",                          prix: 20000,  image: "img/Orthèse de la cheville et du pied.jpg",                                 categorie: "clinique",    promo: false, stock: true, description: "Attelle orthopédique de nuit disponible en tailles S, M et L. Maintien et immobilisation du pied pendant le repos pour une rééducation confortable." },
+    { id: 20, nom: "Abaisse-langue en bois (boîte de 50)",             prix: 3500,   image: "img/tongue depressore.png",                                                 categorie: "consommable", promo: false, stock: true, description: "Boîte de 50 abaisse-langues en bois (150x18x1,6 mm). Consommable à usage unique pour consultations en cabinet, clinique ou pharmacie." },
+    { id: 21, nom: "Kit de pinces chirurgicales (10 pièces)",          prix: 40000,  image: "img/kit de ciseaux de churirgie.png",                                       categorie: "clinique",    promo: false, stock: true, description: "Set de 10 pinces chirurgicales pour soins et interventions en clinique. Outils essentiels pour tout bloc de soins ou salle d'opération." },
+    { id: 22, nom: "Lames de bistouri n°23 (boîte de 100)",            prix: 8000,   image: "img/surirgicale blade.webp",                                                categorie: "consommable", promo: false, stock: true, description: "Boîte de 100 lames de bistouri en acier carbone, taille n°23. Stériles, à usage unique, pour interventions chirurgicales et soins en clinique." },
+    { id: 23, nom: "Ballon de réanimation pédiatrique",                prix: 20000,  image: "img/respirateur manuel.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille pédiatrique, livré en coffret. Matériel d'urgence pour la ventilation manuelle des enfants en détresse respiratoire." },
+    { id: 24, nom: "Ballon de réanimation adulte",                     prix: 20000,  image: "img/respirateur manuel.webp",                                               categorie: "clinique",    promo: false, stock: true, description: "Ballon auto-gonflable (BAVU) en PVC, taille adulte, livré en coffret. Indispensable pour la ventilation manuelle en réanimation et premiers secours." },
+    { id: 25, nom: "Tambour de stérilisation 170mm",                   prix: 15000,  image: "img/tambours de sterilisation.avif",                                        categorie: "clinique",    promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 170 mm. Pour le stockage stérile de compresses et consommables médicaux en clinique ou bloc opératoire." },
+    { id: 26, nom: "Tambour de stérilisation 200mm",                   prix: 18500,  image: "img/tambours de sterilisation.avif",                                        categorie: "clinique",    promo: false, stock: true, description: "Tambour métallique de stérilisation, diamètre 200 mm. Format plus grand pour un stockage stérile en volume en clinique ou bloc opératoire." },
+    { id: 27, nom: "Portoir à tubes à essai (50 puits)",               prix: 6000,   image: "img/support a tube a essaie.webp",                                          categorie: "clinique",    promo: false, stock: true, description: "Râtelier pour tubes à essai de 12-13 mm, 50 emplacements. Pour une organisation rapide et sécurisée des échantillons en laboratoire d'analyses." },
+    { id: 28, nom: "Coton hydrophile (rouleau 100g)",                  prix: 2500,   image: "img/cotton en rouleau.webp",                                               categorie: "consommable", promo: false, stock: true, description: "Rouleau de coton hydrophile 100g (format 6x15). Consommable essentiel pour soins, pansements et désinfection en clinique, pharmacie ou à domicile." },
+    { id: 29, nom: "Test rapide Toxoplasmose",                         prix: 1500,   image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la toxoplasmose sur sang total, sérum ou plasma. Résultat en quelques minutes, sans équipement spécial. Pour cliniques et laboratoires." },
+    { id: 30, nom: "Test rapide Rubéole IgG/IgM",                      prix: 1500,   image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide de la rubéole (IgG et IgM) sur sérum ou plasma. Outil de diagnostic essentiel pour le suivi prénatal et les cliniques." },
+    { id: 31, nom: "Test rapide Paludisme PF/PV",                      prix: 1500,   image: "img/test rapide accurate.png",                                              categorie: "consommable", promo: false, stock: true, description: "Test de dépistage rapide du paludisme (Plasmodium falciparum et vivax) sur sang total. Résultat fiable en minutes, adapté au contexte malien." },
+    { id: 32, nom: "Mannequin pédagogique d'accouchement",             prix: 550000, image: "img/manequin d'accouchement.jpg",                                           categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique de simulation pour la formation aux techniques d'accouchement. Destiné aux écoles de santé, centres de formation de sages-femmes et structures médicales." },
+    { id: 33, nom: "Modèle anatomique du système urogénital masculin", prix: 40000,  image: "img/Modèle de système urogénital masculin.jpg",                             categorie: "clinique",    promo: false, stock: true, description: "Modèle anatomique détaillé du système urogénital masculin, en coupe. Support pédagogique idéal pour l'enseignement médical, les écoles de santé et les cabinets d'urologie." },
+    { id: 34, nom: "Modèle anatomique larynx, cœur et poumons",        prix: 200000, image: "img/humain anatomique médical larynx cardiaque et pulmonaire modèle larynx l'exercice modèle.avif", categorie: "clinique", promo: false, stock: true, description: "Modèle anatomique du larynx, du cœur et des poumons, conçu pour l'exercice et la formation médicale. Idéal pour l'enseignement en écoles de santé et cliniques pédagogiques." },
+    { id: 35, nom: "Trousse portable d'injection intramusculaire",     prix: 25000,  image: "img/Trousse de pratique d'injection intramusculaire portable.webp",         categorie: "clinique",    promo: false, stock: true, description: "Trousse portable pour la pratique de l'injection intramusculaire. Outil de formation pratique destiné aux étudiants en santé et au personnel infirmier en apprentissage." },
 
 ];
 
@@ -741,10 +741,8 @@ function afficherPanier() {
         if (nomInput && !nomInput.value) nomInput.value = utilisateur.nom || "";
         if (emailInput && !emailInput.value) emailInput.value = utilisateur.email || "";
 
-        const utilisateurs = getUtilisateurs();
-        const userComplet = utilisateurs.find(u => u.email === utilisateur.email);
-        if (telInput && !telInput.value && userComplet?.telephone) {
-            telInput.value = userComplet.telephone;
+        if (telInput && !telInput.value && utilisateur.telephone) {
+            telInput.value = utilisateur.telephone;
         }
     }
 }
@@ -754,30 +752,27 @@ function afficherPanier() {
 // ===========================================
 
 function getDetailsPaiement(methode, total) {
-    switch (methode) {
-        case "orange":
-            return `
-                <p>Envoyez <strong>${total.toLocaleString()} FCFA</strong> au numéro Orange Money :</p>
-                <p><strong>+223 72 08 09 37</strong></p>
-                <p>Puis cliquez sur "Confirmer ma commande" et envoyez-nous la capture du paiement par WhatsApp.</p>
-                <button class="btn-confirmer">Confirmer ma commande</button>
-            `;
-        case "wave":
-            return `
-                <p>Envoyez <strong>${total.toLocaleString()} FCFA</strong> via Wave au numéro :</p>
-                <p><strong>+223 72 08 09 37</strong></p>
-                <p>Puis cliquez sur "Confirmer ma commande" et envoyez-nous la capture du paiement par WhatsApp.</p>
-                <button class="btn-confirmer">Confirmer ma commande</button>
-            `;
-        case "carte":
-            return `
-                <p>Paiement par carte bancaire (Visa, Mastercard) sécurisé.</p>
-                <p>Cliquez sur "Confirmer ma commande" pour finaliser votre commande.</p>
-                <button class="btn-confirmer">Confirmer ma commande</button>
-            `;
-        default:
-            return "";
-    }
+    const libelles = {
+        orange: "Orange Money",
+        wave: "Wave",
+        carte: "Carte bancaire Visa / Mastercard"
+    };
+    return `
+        <div style="text-align:center; padding: 10px 0;">
+            <p style="font-size:14px; color:#555; margin-bottom:12px;">
+                Vous allez être redirigé vers la page de paiement sécurisée
+                CinetPay pour régler <strong>${total.toLocaleString()} FCFA</strong>
+                par <strong>${libelles[methode] || methode}</strong>.
+            </p>
+            <p style="font-size:12px; color:#888;">
+                🔒 Paiement 100% sécurisé — vos données bancaires ne
+                transitent jamais par nos serveurs.
+            </p>
+            <button class="btn-confirmer" style="margin-top:14px;">
+                Procéder au paiement →
+            </button>
+        </div>
+    `;
 }
 
 function getTotalPanier() {
@@ -868,8 +863,15 @@ async function confirmerCommande(methode) {
     });
 
     const modePaiement = MODES_PAIEMENT_LABELS[methode] || methode;
-    let numeroCommande = "";
 
+    const btnConfirmer = document.querySelector(".btn-confirmer");
+    if (btnConfirmer) {
+        btnConfirmer.textContent = "⏳ Traitement en cours...";
+        btnConfirmer.disabled = true;
+    }
+
+    // ── ÉTAPE 1 : Créer la commande dans MongoDB ──
+    let numeroCommande = "";
     try {
         const response = await fetch(`${BACKEND_URL}/api/commandes`, {
             method: "POST",
@@ -897,50 +899,64 @@ async function confirmerCommande(methode) {
         console.warn("Commande non envoyée au backend", error);
     }
 
-    let message = "Bonjour, je confirme ma commande chez Hygia :%0A";
+    // ── ÉTAPE 2 : Initier le paiement CinetPay ──
+    // (Orange Money, Wave, Carte bancaire → tous via CinetPay)
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/paiement/initier`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                commande_id: numeroCommande,
+                montant: total,
+                client: {
+                    nom,
+                    telephone,
+                    adresse,
+                    email
+                },
+                methode
+            })
+        });
 
-    articles.forEach(item => {
-        message += `- ${item.nom} x${item.quantite} (${item.sousTotal.toLocaleString()} FCFA)%0A`;
-    });
+        const data = await response.json();
 
-    if (numeroCommande) {
-        message += `%0ANuméro de commande : ${numeroCommande}`;
+        if (data.succes && data.payment_url) {
+            if (couponApplique) {
+                markCouponAsUsed();
+            }
+
+            enregistrerCommande(panier, methode, total);
+
+            savePanier([]);
+            clearAppliedCoupon();
+            setCouponFeedback("", "");
+            mettreAJourCompteurPanier();
+
+            window.location.href = data.payment_url;
+            return;
+        }
+
+        afficherToast(
+            "Erreur lors de l'initialisation du paiement" + (data.erreur ? " : " + data.erreur : ""),
+            "error"
+        );
+        if (btnConfirmer) {
+            btnConfirmer.textContent = "Procéder au paiement →";
+            btnConfirmer.disabled = false;
+        }
+    } catch (error) {
+        console.error("Erreur lors du paiement CinetPay:", error);
+        afficherToast(
+            "Le service de paiement est temporairement indisponible. Réessayez ou contactez-nous sur WhatsApp.",
+            "error"
+        );
+        if (btnConfirmer) {
+            btnConfirmer.textContent = "Procéder au paiement →";
+            btnConfirmer.disabled = false;
+        }
     }
-
-    message += `%0AMode de paiement : ${modePaiement}`;
-    message += `%0AClient : ${nom}`;
-    message += `%0ATéléphone : ${telephone}`;
-    message += `%0AAdresse : ${adresse}`;
-
-    if (couponApplique) {
-        message += `%0ACode promo : ${PROMO_CODE}`;
-        message += `%0ARéduction : ${totals.discount.toLocaleString()} FCFA`;
-        message += `%0ALivraison : gratuite`;
-    }
-    message += `%0ATotal : ${total.toLocaleString()} FCFA`;
-
-    window.open(`https://wa.me/22372080937?text=${message}`, "_blank");
-
-    if (couponApplique) {
-        markCouponAsUsed();
-    }
-
-    enregistrerCommande(panier, methode, total);
-
-    savePanier([]);
-    clearAppliedCoupon();
-    setCouponFeedback("", "");
-    mettreAJourCompteurPanier();
-
-    document.getElementById("modal-paiement").classList.remove("active");
-
-    const params = new URLSearchParams({
-        numero: numeroCommande || "En cours",
-        total: total,
-        methode: modePaiement,
-        nom: nom
-    });
-    window.location.href = `commande-confirmee.html?${params.toString()}`;
 }
 
 // ===========================================
@@ -1158,18 +1174,8 @@ function initRechercheLive() {
 }
 
 // ===========================================
-// SYSTÈME DE COMPTES (SIMULATION localStorage)
-// ⚠️ À remplacer par de vrais appels API quand le backend sera prêt.
+// SYSTÈME DE COMPTES (API backend Hygia)
 // ===========================================
-
-function getUtilisateurs() {
-    const data = localStorage.getItem("utilisateurs");
-    return data ? JSON.parse(data) : [];
-}
-
-function saveUtilisateurs(utilisateurs) {
-    localStorage.setItem("utilisateurs", JSON.stringify(utilisateurs));
-}
 
 function getUtilisateurConnecte() {
     const data = localStorage.getItem("utilisateurConnecte");
@@ -1184,33 +1190,56 @@ function deconnecterUtilisateur() {
     localStorage.removeItem("utilisateurConnecte");
 }
 
-function inscrireUtilisateur(nom, telephone, email, motdepasse) {
-    const utilisateurs = getUtilisateurs();
+async function inscrireUtilisateur(nom, telephone, email, motdepasse) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/inscription`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nom, telephone, email, motdepasse })
+        });
 
-    const existe = utilisateurs.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existe) {
-        return { succes: false, message: "Un compte existe déjà avec cet email." };
+        const data = await response.json();
+
+        if (data.succes && data.utilisateur) {
+            setUtilisateurConnecte({
+                nom: data.utilisateur.nom,
+                email: data.utilisateur.email,
+                telephone: telephone
+            });
+            return { succes: true, message: data.message || "Compte créé avec succès !" };
+        }
+
+        return { succes: false, message: data.erreur || "Erreur lors de la création du compte." };
+    } catch (error) {
+        console.error("Erreur inscription :", error);
+        return { succes: false, message: "Impossible de créer le compte. Vérifiez votre connexion." };
     }
-
-    const nouvelUtilisateur = { nom, telephone, email, motdepasse };
-    utilisateurs.push(nouvelUtilisateur);
-    saveUtilisateurs(utilisateurs);
-
-    setUtilisateurConnecte({ nom, email });
-
-    return { succes: true, message: "Compte créé avec succès !" };
 }
 
-function connecterUtilisateur(email, motdepasse) {
-    const utilisateurs = getUtilisateurs();
-    const utilisateur = utilisateurs.find(u => u.email.toLowerCase() === email.toLowerCase() && u.motdepasse === motdepasse);
+async function connecterUtilisateur(email, motdepasse) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/connexion`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, motdepasse })
+        });
 
-    if (!utilisateur) {
-        return { succes: false, message: "Email ou mot de passe incorrect." };
+        const data = await response.json();
+
+        if (data.succes && data.utilisateur) {
+            setUtilisateurConnecte({
+                nom: data.utilisateur.nom,
+                email: data.utilisateur.email,
+                telephone: data.utilisateur.telephone || ""
+            });
+            return { succes: true, message: data.message || "Connexion réussie !" };
+        }
+
+        return { succes: false, message: data.erreur || "Email ou mot de passe incorrect." };
+    } catch (error) {
+        console.error("Erreur connexion :", error);
+        return { succes: false, message: "Impossible de se connecter. Vérifiez votre connexion." };
     }
-
-    setUtilisateurConnecte({ nom: utilisateur.nom, email: utilisateur.email });
-    return { succes: true, message: "Connexion réussie !" };
 }
 
 function mettreAJourNavCompte() {
@@ -1249,7 +1278,7 @@ function initFormulairesAuth() {
     const message = document.getElementById("auth-message");
 
     if (formInscription) {
-        formInscription.addEventListener("submit", (e) => {
+        formInscription.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const nom = document.getElementById("nom").value.trim();
@@ -1257,20 +1286,184 @@ function initFormulairesAuth() {
             const email = document.getElementById("email").value.trim();
             const motdepasse = document.getElementById("password").value;
 
-            const resultat = inscrireUtilisateur(nom, telephone, email, motdepasse);
+            const resultat = await inscrireUtilisateur(nom, telephone, email, motdepasse);
             afficherResultatAuth(resultat, message);
         });
     }
 
     if (formConnexion) {
-        formConnexion.addEventListener("submit", (e) => {
+        formConnexion.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const email = document.getElementById("email").value.trim();
             const motdepasse = document.getElementById("password").value;
 
-            const resultat = connecterUtilisateur(email, motdepasse);
+            const resultat = await connecterUtilisateur(email, motdepasse);
             afficherResultatAuth(resultat, message);
+        });
+    }
+}
+
+function getInitials(nom) {
+    if (!nom) return "—";
+    const parts = nom.trim().split(" ").filter(Boolean);
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].slice(0, 2).toUpperCase();
+}
+
+function afficherMessageCompte(elementId, message, type) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.textContent = message;
+    el.className = `compte-message ${type}`;
+}
+
+function cacherMessageCompte(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.className = "compte-message";
+    el.textContent = "";
+}
+
+function initFormulairesCompte(utilisateur) {
+    const btnModifier = document.getElementById("btn-modifier-profil");
+    const btnChangerPassword = document.getElementById("btn-changer-password");
+    const formProfilCard = document.getElementById("form-profil-card");
+    const formPasswordCard = document.getElementById("form-password-card");
+    const formProfil = document.getElementById("form-profil");
+    const formPassword = document.getElementById("form-password");
+    const btnAnnulerProfil = document.getElementById("btn-annuler-profil");
+    const btnAnnulerPassword = document.getElementById("btn-annuler-password");
+
+    function fermerFormulaires() {
+        if (formProfilCard) formProfilCard.classList.remove("active");
+        if (formPasswordCard) formPasswordCard.classList.remove("active");
+        if (btnModifier) btnModifier.style.display = "";
+        if (btnChangerPassword) btnChangerPassword.style.display = "";
+        cacherMessageCompte("profil-message");
+        cacherMessageCompte("password-message");
+    }
+
+    if (btnModifier && formProfilCard) {
+        btnModifier.addEventListener("click", () => {
+            document.getElementById("profil-nom").value = utilisateur.nom || "";
+            document.getElementById("profil-telephone").value = utilisateur.telephone || "";
+            document.getElementById("profil-motdepasse").value = "";
+            cacherMessageCompte("profil-message");
+            formProfilCard.classList.add("active");
+            formPasswordCard.classList.remove("active");
+            if (btnChangerPassword) btnChangerPassword.style.display = "";
+        });
+    }
+
+    if (btnChangerPassword && formPasswordCard) {
+        btnChangerPassword.addEventListener("click", () => {
+            formPassword.reset();
+            cacherMessageCompte("password-message");
+            formPasswordCard.classList.add("active");
+            formProfilCard.classList.remove("active");
+            if (btnModifier) btnModifier.style.display = "";
+        });
+    }
+
+    if (btnAnnulerProfil) btnAnnulerProfil.addEventListener("click", fermerFormulaires);
+    if (btnAnnulerPassword) btnAnnulerPassword.addEventListener("click", fermerFormulaires);
+
+    if (formProfil) {
+        formProfil.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            cacherMessageCompte("profil-message");
+
+            const nom = document.getElementById("profil-nom").value.trim();
+            const telephone = document.getElementById("profil-telephone").value.trim();
+            const motdepasse = document.getElementById("profil-motdepasse").value;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/profil`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: utilisateur.email,
+                        motdepasse,
+                        nom,
+                        telephone
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.succes) {
+                    // Mettre à jour l'utilisateur en localStorage
+                    const misAJour = {
+                        ...utilisateur,
+                        nom: data.utilisateur.nom,
+                        telephone: data.utilisateur.telephone
+                    };
+                    setUtilisateurConnecte(misAJour);
+
+                    // Mettre à jour l'affichage
+                    document.getElementById("compte-nom").textContent = "Bonjour, " + misAJour.nom;
+                    document.getElementById("compte-avatar").textContent = getInitials(misAJour.nom);
+                    document.getElementById("info-nom").textContent = misAJour.nom || "—";
+                    document.getElementById("info-telephone").textContent = misAJour.telephone || "—";
+
+                    afficherMessageCompte("profil-message", data.message, "success");
+                    setTimeout(fermerFormulaires, 1500);
+                } else {
+                    afficherMessageCompte("profil-message", data.erreur || "Erreur lors de la mise à jour.", "error");
+                }
+            } catch (error) {
+                console.error("Erreur mise à jour profil :", error);
+                afficherMessageCompte("profil-message", "Erreur réseau. Vérifiez votre connexion.", "error");
+            }
+        });
+    }
+
+    if (formPassword) {
+        formPassword.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            cacherMessageCompte("password-message");
+
+            const ancien = document.getElementById("password-ancien").value;
+            const nouveau = document.getElementById("password-nouveau").value;
+            const confirmation = document.getElementById("password-confirmation").value;
+
+            if (nouveau !== confirmation) {
+                afficherMessageCompte("password-message", "Les nouveaux mots de passe ne correspondent pas.", "error");
+                return;
+            }
+
+            if (nouveau.length < 6) {
+                afficherMessageCompte("password-message", "Le mot de passe doit contenir au moins 6 caractères.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/motdepasse`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: utilisateur.email,
+                        ancienMotdepasse: ancien,
+                        nouveauMotdepasse: nouveau
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.succes) {
+                    afficherMessageCompte("password-message", data.message, "success");
+                    formPassword.reset();
+                    setTimeout(fermerFormulaires, 1500);
+                } else {
+                    afficherMessageCompte("password-message", data.erreur || "Erreur lors du changement.", "error");
+                }
+            } catch (error) {
+                console.error("Erreur changement mot de passe :", error);
+                afficherMessageCompte("password-message", "Erreur réseau. Vérifiez votre connexion.", "error");
+            }
         });
     }
 }
@@ -1293,11 +1486,8 @@ function afficherPageCompte() {
 
     // Avatar : initiales du nom
     const avatarEl = document.getElementById("compte-avatar");
-    if (avatarEl && utilisateur.nom) {
-        const parts = utilisateur.nom.trim().split(" ");
-        avatarEl.textContent = parts.length >= 2
-            ? (parts[0][0] + parts[1][0]).toUpperCase()
-            : parts[0].slice(0, 2).toUpperCase();
+    if (avatarEl) {
+        avatarEl.textContent = getInitials(utilisateur.nom);
     }
 
     document.getElementById("compte-nom").textContent = "Bonjour, " + utilisateur.nom;
@@ -1310,11 +1500,9 @@ function afficherPageCompte() {
     if (infoNom) infoNom.textContent = utilisateur.nom || "—";
     if (infoEmail) infoEmail.textContent = utilisateur.email || "—";
 
-    // Récupérer le téléphone depuis le profil complet
+    // Récupérer le téléphone depuis le profil connecté
     if (infoTel) {
-        const tous = getUtilisateurs();
-        const profil = tous.find(u => u.email.toLowerCase() === utilisateur.email.toLowerCase());
-        infoTel.textContent = profil?.telephone || "—";
+        infoTel.textContent = utilisateur.telephone || "—";
     }
 
     const btnDeco = document.getElementById("btn-deconnexion");
@@ -1325,20 +1513,38 @@ function afficherPageCompte() {
         });
     }
 
+    // Initialiser les formulaires de modification de profil et mot de passe
+    initFormulairesCompte(utilisateur);
+
     const btnSupprimer = document.getElementById("btn-supprimer-compte");
     if (btnSupprimer) {
-        btnSupprimer.addEventListener("click", () => {
+        btnSupprimer.addEventListener("click", async () => {
             const confirmé = window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.");
             if (!confirmé) return;
-            const tous = getUtilisateurs();
-            const restants = tous.filter(u => u.email.toLowerCase() !== utilisateur.email.toLowerCase());
-            saveUtilisateurs(restants);
-            const historiqueTous = JSON.parse(localStorage.getItem("historiqueCommandes") || "[]");
-            const historiqueRestant = historiqueTous.filter(c => c.email !== utilisateur.email);
-            localStorage.setItem("historiqueCommandes", JSON.stringify(historiqueRestant));
-            deconnecterUtilisateur();
-            afficherToast("Votre compte a été supprimé.", "info");
-            setTimeout(() => { window.location.href = "index.html"; }, 1200);
+
+            const motdepasse = window.prompt("Veuillez entrer votre mot de passe pour confirmer la suppression :");
+            if (!motdepasse) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/supprimer`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: utilisateur.email, motdepasse })
+                });
+
+                const data = await response.json();
+
+                if (data.succes) {
+                    deconnecterUtilisateur();
+                    afficherToast("Votre compte a été supprimé.", "info");
+                    setTimeout(() => { window.location.href = "index.html"; }, 1200);
+                } else {
+                    afficherToast(data.erreur || "Impossible de supprimer le compte.", "error");
+                }
+            } catch (error) {
+                console.error("Erreur suppression compte :", error);
+                afficherToast("Erreur réseau lors de la suppression.", "error");
+            }
         });
     }
 

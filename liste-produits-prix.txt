@@ -1,0 +1,36 @@
+ID | NOM DU PRODUIT | PRIX ACTUEL (FCFA)
+---|----------------|-------------------
+1  | Tensiomètre manuel avec stéthoscope | 8000
+2  | Tensiomètre électronique automatique | 18.500
+3  | Oxymètre de pouls | 5500
+4  | Chaise médicale pivotante | 15000
+5  | Plateau inox carré (instrumentation) | 5500
+6  | Microscope de laboratoire (40x à 1600x) | 210000
+7  | Centrifugeuse avec minuterie (6 tubes) | 49000
+9  | Agitateur orbital de laboratoire | 90 000
+10 | Lecteur d'hémoglobine portable Mission HB | cherche le prix et ajoute la marge
+11 | Bandelettes Mission HB (boîte de 50) | 24 000
+12 | Lecteur d'hémoglobine URIT H12 | 38 000
+13 | Bandelettes URIT H12 (boîte de 50) | 14 000
+14 | Bandelettes urinaires 10 paramètres (URS-10A) | 5 000
+15 | Bandelettes urinaires 3 paramètres (URS-3T) | 3 000
+16 | Pèse-personne mécanique médical | 23 500
+17 | Pèse-bébé avec toise intégrée | 88 000
+18 | Toise souple bébé (PVC) | 15 000
+19 | Attelle de nuit (S/M/L) | 11 000
+20 | Abaisse-langue en bois (boîte de 50) | 1 500
+21 | Kit de pinces chirurgicales (10 pièces) | 28 000
+22 | Lames de bistouri n°23 (boîte de 100) | 4 000
+23 | Ballon de réanimation pédiatrique | 12 000
+24 | Ballon de réanimation adulte | 12 000
+25 | Tambour de stérilisation 170mm | 9 000
+26 | Tambour de stérilisation 200mm | 11 000
+27 | Portoir à tubes à essai (50 puits) | 3 000
+28 | Coton hydrophile (rouleau 100g) | 1 000
+29 | Test rapide Toxoplasmose | 600
+30 | Test rapide Rubéole IgG/IgM | 700
+31 | Test rapide Paludisme PF/PV | 600
+32 | Mannequin pédagogique d'accouchement | 490 000
+33 | Modèle anatomique du système urogénital masculin | 28 000
+34 | Modèle anatomique larynx, cœur et poumons | 90 000
+35 | Trousse portable d'injection intramusculaire | 15000

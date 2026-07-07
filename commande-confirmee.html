@@ -7,6 +7,97 @@
     <link rel="stylesheet" href="yames.css">
     <script src="yames.js" defer></script>
     <title>Commande confirmée — Hygia</title>
+    <style>
+        .confirmation-page {
+            text-align: center;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .conf-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+        }
+
+        .conf-icon.succes { background-color: #d5f5e3; }
+        .conf-icon.echec { background-color: #fadbd8; }
+
+        .conf-numero {
+            background-color: #E6F1FB;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #185FA5;
+            margin: 20px 0;
+        }
+
+        .conf-recap {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .conf-recap-ligne {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .conf-recap-ligne:last-child { border-bottom: none; }
+        .conf-recap-ligne strong { color: #0C447C; }
+
+        .conf-message {
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 16px;
+        }
+
+        .conf-message.succes { background-color: #eafaf1; color: #1e7e45; }
+        .conf-message.echec { background-color: #fdecea; color: #a93226; }
+
+        .conf-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .spinner-paiement {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #E6F1FB;
+            border-top: 4px solid #185FA5;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin-pay 0.9s linear infinite;
+        }
+
+        @keyframes spin-pay {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .conf-actions { flex-direction: column; }
+        }
+    </style>
 </head>
 
 <body>
@@ -40,29 +131,60 @@
     </nav>
 
     <main>
-        <section class="confirmation-page">
-            <div class="confirmation-icon">✅</div>
-            <h1>Commande confirmée !</h1>
-            <p>Merci pour votre confiance.</p>
+        <section class="confirmation-page" id="confirmation-container">
 
-            <div class="confirmation-numero">
-                N° <span id="conf-numero">—</span>
+            <!-- ÉTAT : VÉRIFICATION EN COURS -->
+            <div id="etat-verification">
+                <div class="spinner-paiement"></div>
+                <h1>Vérification du paiement...</h1>
+                <p>Nous vérifions votre paiement, veuillez patienter quelques secondes.</p>
             </div>
 
-            <div class="confirmation-recap">
-                <div><strong>Client :</strong> <span id="conf-nom">—</span></div>
-                <div><strong>Mode de paiement :</strong> <span id="conf-methode">—</span></div>
-                <div><strong>Montant total :</strong> <span id="conf-total">—</span></div>
+            <!-- ÉTAT : SUCCÈS -->
+            <div id="etat-succes" style="display:none;">
+                <div class="conf-icon succes">✅</div>
+                <h1>Commande confirmée !</h1>
+                <p>Merci pour votre confiance.</p>
+
+                <div class="conf-numero">
+                    N° <span id="conf-numero">—</span>
+                </div>
+
+                <div class="conf-recap">
+                    <div class="conf-recap-ligne"><span>Client</span> <strong id="conf-nom">—</strong></div>
+                    <div class="conf-recap-ligne"><span>Mode de paiement</span> <strong id="conf-methode">—</strong></div>
+                    <div class="conf-recap-ligne"><span>Statut du paiement</span> <strong id="conf-statut-paiement">—</strong></div>
+                    <div class="conf-recap-ligne"><span>Montant total</span> <strong id="conf-total">—</strong></div>
+                </div>
+
+                <div class="conf-message succes">
+                    Votre commande a été enregistrée. Nous vous contacterons pour organiser
+                    la livraison sous 24 à 48h à Bamako.
+                </div>
+
+                <div class="conf-actions">
+                    <a href="compte.html" class="btn-paiement">Voir mes commandes</a>
+                    <a href="catalogue.html" class="btn-continue">Continuer mes achats</a>
+                </div>
             </div>
 
-            <p style="color:#555; font-size:14px; margin-top:16px;">
-                Nous vous contacterons au numéro fourni pour confirmer la livraison.
-            </p>
+            <!-- ÉTAT : ÉCHEC -->
+            <div id="etat-echec" style="display:none;">
+                <div class="conf-icon echec">❌</div>
+                <h1>Paiement non complété</h1>
+                <p>Votre paiement n'a pas pu être traité. Vous n'avez pas été débité.</p>
 
-            <div class="confirmation-actions">
-                <a href="compte.html" class="btn-paiement">Voir mes commandes</a>
-                <a href="catalogue.html" class="btn-continue">Continuer mes achats</a>
+                <div class="conf-message echec">
+                    Veuillez réessayer votre paiement depuis votre panier. Si le problème
+                    persiste, contactez-nous et nous vous aiderons à finaliser votre commande.
+                </div>
+
+                <div class="conf-actions">
+                    <a href="panier.html" class="btn-paiement">Réessayer</a>
+                    <a href="contact.html" class="btn-continue">Nous contacter</a>
+                </div>
             </div>
+
         </section>
     </main>
 
@@ -79,6 +201,77 @@
         </div>
         <p>&copy; 2026 Hygia. Tous droits réservés.</p>
     </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const params = new URLSearchParams(window.location.search);
+            const transaction = params.get("transaction");
+            const numero = params.get("numero");
+
+            const etatVerification = document.getElementById("etat-verification");
+            const etatSucces = document.getElementById("etat-succes");
+            const etatEchec = document.getElementById("etat-echec");
+
+            function afficherSucces({ numero, nom, methode, total, paye }) {
+                etatVerification.style.display = "none";
+                etatEchec.style.display = "none";
+                etatSucces.style.display = "block";
+
+                document.getElementById("conf-numero").textContent = numero || "—";
+                document.getElementById("conf-nom").textContent = nom || "—";
+                document.getElementById("conf-methode").textContent = methode || "—";
+                document.getElementById("conf-statut-paiement").textContent = paye ? "✅ Payé" : "En attente";
+                document.getElementById("conf-total").textContent = total
+                    ? Number(total).toLocaleString() + " FCFA"
+                    : "—";
+            }
+
+            function afficherEchec() {
+                etatVerification.style.display = "none";
+                etatSucces.style.display = "none";
+                etatEchec.style.display = "block";
+            }
+
+            // CAS 1 : Retour CinetPay avec transaction à vérifier
+            if (transaction) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/paiement/verifier?transaction=${encodeURIComponent(transaction)}`);
+                    const data = await response.json();
+
+                    if (data.statut === "ACCEPTED") {
+                        afficherSucces({
+                            numero: data.numero,
+                            nom: data.nom,
+                            methode: data.methode,
+                            total: data.total,
+                            paye: true
+                        });
+                    } else {
+                        afficherEchec();
+                    }
+                } catch (error) {
+                    console.error("Erreur de vérification du paiement :", error);
+                    afficherEchec();
+                }
+                return;
+            }
+
+            // CAS 2 : Confirmation directe (paramètres passés dans l'URL)
+            if (numero) {
+                afficherSucces({
+                    numero,
+                    nom: params.get("nom"),
+                    methode: params.get("methode"),
+                    total: params.get("total"),
+                    paye: false
+                });
+                return;
+            }
+
+            // CAS 3 : Aucun paramètre → redirection
+            window.location.href = "index.html";
+        });
+    </script>
 
 </body>
 
