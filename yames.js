@@ -191,6 +191,14 @@ function clearPartnerCoupon() {
     localStorage.removeItem(PARTNER_COUPON_KEY);
 }
 
+function resetCouponUI() {
+    clearPartnerCoupon();
+    clearAppliedCoupon();
+    lastCouponFeedback = { message: "", type: "" };
+    const couponInput = document.getElementById("coupon-input");
+    if (couponInput) couponInput.value = "";
+}
+
 async function validerCodePartenaire(code) {
     try {
         const res = await fetch(`${BACKEND_URL}/api/verifier-code-promo`, {
@@ -1002,6 +1010,12 @@ async function confirmerCommande(methode) {
         if (!numeroCommande) {
             throw new Error("Numéro de commande non reçu");
         }
+
+        // Le code promo/créateur a été utilisé pour cette commande : on le vide
+        if (totals.couponApplied) {
+            markCouponAsUsed();
+        }
+        resetCouponUI();
     } catch (err) {
         console.warn("Impossible de créer la commande:", err);
         hideSyphaLoader();
