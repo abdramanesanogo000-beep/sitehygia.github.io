@@ -1202,16 +1202,23 @@
         }
 
         async function chargerPartenaires() {
+            const tbody = document.getElementById("tbody-partenaires");
             try {
                 const res = await fetch(`${API}/api/admin/partenaires`, {
                     headers: { "x-admin-password": pwd }
                 });
-                if (!res.ok) throw new Error("Erreur auth");
+                if (!res.ok) {
+                    let msg = `Erreur HTTP ${res.status}`;
+                    if (res.status === 401) msg = "Mot de passe admin incorrect (401)";
+                    if (res.status === 404) msg = "Route non trouvée (404) — le backend n'a pas les routes partenaires";
+                    if (res.status === 500) msg = "Erreur serveur (500)";
+                    throw new Error(msg);
+                }
                 partenaires = await res.json();
                 afficherPartenaires();
-            } catch {
-                document.getElementById("tbody-partenaires").innerHTML =
-                    `<tr><td colspan="7" style="text-align:center;color:#c0392b;padding:20px;">Erreur de chargement.</td></tr>`;
+            } catch (err) {
+                console.error("chargerPartenaires:", err);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c0392b;padding:20px;">${err.message || "Erreur de chargement."}</td></tr>`;
             }
         }
 
@@ -1289,10 +1296,13 @@
                 if (res.ok && data.succes) {
                     fermerModalPartenaire();
                     await chargerPartenaires();
+                } else if (res.status === 404) {
+                    showMsgPartenaire("Route non trouvée (404). Le backend Render n'a pas les routes partenaires. Vérifie le déploiement.", "error");
                 } else {
-                    showMsgPartenaire(data.erreur || "Erreur lors de la création.", "error");
+                    showMsgPartenaire(data.erreur || `Erreur ${res.status} lors de la création.`, "error");
                 }
-            } catch {
+            } catch (err) {
+                console.error("enregistrerPartenaire:", err);
                 showMsgPartenaire("Impossible de joindre le serveur.", "error");
             }
         });
