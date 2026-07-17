@@ -2103,6 +2103,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const code = couponInput.value.trim();
             const normalise = code.toUpperCase();
 
+            // Animation du bouton
+            couponButton.classList.remove("coupon-button-anim");
+            void couponButton.offsetWidth;
+            couponButton.classList.add("coupon-button-anim");
+
             // On efface d'abord tout ancien code partenaire
             clearPartnerCoupon();
             clearAppliedCoupon();
@@ -2116,6 +2121,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     type: "success"
                 };
                 afficherPanier();
+                animerCouponApplique(true, true);
                 return;
             }
 
@@ -2129,7 +2135,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 clearAppliedCoupon();
             }
             afficherPanier();
+            animerCouponApplique(resultat.success, resultat.success);
         });
+    }
+
+    function animerCouponApplique(success, animateDiscount) {
+        const couponMessage = document.getElementById("coupon-message");
+        const discountAmount = document.getElementById("discount-amount");
+
+        if (couponMessage) {
+            couponMessage.classList.remove("coupon-message-anim");
+            void couponMessage.offsetWidth;
+            couponMessage.classList.add("coupon-message-anim");
+            setTimeout(() => couponMessage.classList.remove("coupon-message-anim"), 420);
+        }
+
+        if (animateDiscount && discountAmount) {
+            discountAmount.classList.remove("discount-anim");
+            void discountAmount.offsetWidth;
+            discountAmount.classList.add("discount-anim");
+            setTimeout(() => discountAmount.classList.remove("discount-anim"), 520);
+        }
     }
 
     if (couponInput) {
