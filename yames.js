@@ -94,6 +94,8 @@ const BAMAKO_SHIPPING = 1000;
 const PROMO_APPLIED_KEY = "couponApplique";
 const PROMO_USAGE_KEY = "couponUsage";
 const PROMO_POPUP_KEY = "promoPopupSeen";
+let activeAppliedCoupon = "";
+let activePartnerCoupon = null;
 let lastCouponFeedback = { message: "", type: "" };
 
 const promoEndDate = new Date();
@@ -142,23 +144,23 @@ function markCouponAsUsed() {
 }
 
 function getAppliedCoupon() {
-    return localStorage.getItem(PROMO_APPLIED_KEY) || "";
+    return activeAppliedCoupon;
 }
 
 function setAppliedCoupon(code) {
-    localStorage.setItem(PROMO_APPLIED_KEY, code.toUpperCase());
+    activeAppliedCoupon = code.toUpperCase();
+    localStorage.removeItem(PROMO_APPLIED_KEY);
 }
 
 function clearAppliedCoupon() {
+    activeAppliedCoupon = "";
     localStorage.removeItem(PROMO_APPLIED_KEY);
 }
 
 const PARTNER_COUPON_KEY = "partenaireCoupon";
 
 function getPartnerCoupon() {
-    const raw = localStorage.getItem(PARTNER_COUPON_KEY);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    return activePartnerCoupon;
 }
 
 // Animation de chargement Sypha (overlay global)
@@ -185,10 +187,12 @@ function hideSyphaLoader() {
 }
 
 function setPartnerCoupon(code, reduction) {
-    localStorage.setItem(PARTNER_COUPON_KEY, JSON.stringify({ code: code.toUpperCase(), reduction }));
+    activePartnerCoupon = { code: code.toUpperCase(), reduction };
+    localStorage.removeItem(PARTNER_COUPON_KEY);
 }
 
 function clearPartnerCoupon() {
+    activePartnerCoupon = null;
     localStorage.removeItem(PARTNER_COUPON_KEY);
 }
 
