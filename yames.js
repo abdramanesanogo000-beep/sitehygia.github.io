@@ -1998,6 +1998,25 @@ function initScrollReveal() {
     elements.forEach(el => observer.observe(el));
 }
 
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+
+    if (newTheme === 'dark') {
+        html.setAttribute('data-theme', 'dark');
+    } else {
+        html.removeAttribute('data-theme');
+    }
+    localStorage.setItem('hygia-theme', newTheme);
+
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        btn.setAttribute('title', newTheme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre');
+    }
+}
+
 function initTheme() {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -2005,25 +2024,19 @@ function initTheme() {
     document.head.appendChild(link);
 
     const saved = localStorage.getItem('hygia-theme') || 'light';
+    const html = document.documentElement;
     if (saved === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
+        html.setAttribute('data-theme', 'dark');
+    } else {
+        html.removeAttribute('data-theme');
     }
 
     const btn = document.createElement('button');
     btn.id = 'theme-toggle';
     btn.setAttribute('aria-label', 'Basculer le mode sombre');
-    btn.innerHTML = saved === 'dark' ? '☀️' : '🌙';
-    btn.addEventListener('click', () => {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const next = isDark ? 'light' : 'dark';
-        if (next === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-            document.documentElement.removeAttribute('data-theme');
-        }
-        localStorage.setItem('hygia-theme', next);
-        btn.innerHTML = next === 'dark' ? '☀️' : '🌙';
-    });
+    btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+    btn.setAttribute('title', saved === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre');
+    btn.addEventListener('click', toggleTheme);
     document.documentElement.insertBefore(btn, document.body);
 }
 
@@ -2155,8 +2168,8 @@ function initI18n() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    initI18n();
     initTheme();
+    initI18n();
     initWhatsApp();
     initABTest();
     initPromoSystem();
