@@ -1645,8 +1645,7 @@ function afficherOnglet(onglet, btnClique) {
 
 async function afficherFidelite() {
     const pointsEl = document.getElementById("stat-points");
-    const codeEl = document.getElementById("info-code-parrainage");
-    if (!pointsEl && !codeEl) return;
+    if (!pointsEl) return;
 
     try {
         const response = await fetch(`${BACKEND_URL}/api/fidelite/points`, {
@@ -1657,16 +1656,13 @@ async function afficherFidelite() {
         const data = await response.json();
 
         if (data.succes) {
-            if (pointsEl) pointsEl.textContent = (data.pointsFidelite || 0).toLocaleString("fr-FR");
-            if (codeEl) codeEl.textContent = data.codeParrainage || "—";
+            pointsEl.textContent = (data.pointsFidelite || 0).toLocaleString("fr-FR");
         } else {
-            if (pointsEl) pointsEl.textContent = "—";
-            if (codeEl) codeEl.textContent = "—";
+            pointsEl.textContent = "—";
         }
     } catch (error) {
         console.error("Erreur chargement fidélité :", error);
-        if (pointsEl) pointsEl.textContent = "—";
-        if (codeEl) codeEl.textContent = "—";
+        pointsEl.textContent = "—";
     }
 }
 
