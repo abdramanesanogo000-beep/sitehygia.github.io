@@ -393,7 +393,7 @@ function afficherProduits(listeProduits, limite = null, page = 1) {
 
             card.innerHTML = `
           <a href="produit.html?id=${produit.id}" class="product-link">
-            <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}">
+            <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}" loading="lazy" decoding="async">
             <h3>${escapeHtml(produit.nom)}</h3>
           </a>
           <p class="price">${produit.prix.toLocaleString()} FCFA</p>
@@ -642,7 +642,7 @@ function afficherOverlayAjoutPanier(produit) {
         </div>
         <div class="cart-overlay-content">
             <div class="cart-overlay-product">
-                <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}">
+                <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}" loading="lazy" decoding="async">
                 <div class="cart-overlay-product-info">
                     <h4>${escapeHtml(produit.nom)}</h4>
                     <p>${produit.prix.toLocaleString()} FCFA</p>
@@ -806,7 +806,7 @@ function afficherPanier() {
         div.className = "panier-item";
 
         div.innerHTML = `
-            <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}">
+            <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}" loading="lazy" decoding="async">
             <div class="panier-item-info">
                 <h3>${escapeHtml(produit.nom)}</h3>
                 <p class="price-unit">${produit.prix.toLocaleString()} FCFA / unité</p>
@@ -1117,7 +1117,7 @@ function afficherPageProduit() {
 
     container.innerHTML = `
         <div class="produit-detail-image">
-            <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}">
+            <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}" loading="lazy" decoding="async">
         </div>
         <div class="produit-detail-info">
             <h1>${escapeHtml(produit.nom)}</h1>
@@ -1158,7 +1158,7 @@ function afficherPageProduit() {
                 card.className = "product-card";
                 card.innerHTML = `
                     <a href="produit.html?id=${p.id}" class="product-link">
-                        <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.nom)}">
+                        <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.nom)}" loading="lazy" decoding="async">
                         <h3>${escapeHtml(p.nom)}</h3>
                     </a>
                     <p class="price">${p.prix.toLocaleString()} FCFA</p>
@@ -1282,7 +1282,7 @@ function initRechercheLive() {
                 item.href = `produit.html?id=${produit.id}`;
 
                 item.innerHTML = `
-                    <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}">
+                    <img src="${escapeHtml(produit.image)}" alt="${escapeHtml(produit.nom)}" loading="lazy" decoding="async">
                     <div class="search-result-info">
                         <div class="nom">${escapeHtml(produit.nom)}</div>
                         <div class="prix">${produit.prix.toLocaleString()} FCFA</div>

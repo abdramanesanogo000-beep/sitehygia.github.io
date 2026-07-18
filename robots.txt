@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://abdramanesanogo000-beep.github.io/sitehygia.github.io/sitemap.xml
