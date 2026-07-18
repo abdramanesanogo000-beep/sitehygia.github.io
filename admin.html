@@ -784,7 +784,7 @@
 
     <script>
         const API = "https://nslookup-cluster1-bydepfo-mongodb-net-1.onrender.com"; // ← REMPLACER par l'URL Render réelle après déploiement
-        let pwd = "";
+        let adminToken = "";
         let commandes = [];
         let numeroCourant = "";
         let partenaires = [];
@@ -823,25 +823,33 @@
         // CONNEXION
         document.getElementById("form-login").addEventListener("submit", async (e) => {
             e.preventDefault();
-            pwd = document.getElementById("admin-pwd").value;
+            const password = document.getElementById("admin-pwd").value;
             showSyphaLoader("Connexion admin...");
 
             try {
-                const res = await fetch(`${API}/api/admin/stats`, {
-                    headers: { "x-admin-password": pwd }
+                const res = await fetch(`${API}/api/admin/connexion`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ motdepasse: password })
                 });
 
-                if (res.status === 401) {
+                const data = await res.json();
+
+                if (!res.ok || !data.succes || !data.token) {
                     hideSyphaLoader();
-                    showMsg("Mot de passe incorrect.", "error");
+                    showMsg(data.erreur || "Mot de passe incorrect.", "error");
                     return;
                 }
 
-                const stats = await res.json();
-                localStorage.setItem("adminPwd", pwd);
+                adminToken = data.token;
+                localStorage.setItem("adminToken", adminToken);
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
-                afficherStats(stats);
+
+                const statsRes = await fetch(`${API}/api/admin/stats`, {
+                    headers: { "Authorization": `Bearer ${adminToken}` }
+                });
+                afficherStats(await statsRes.json());
                 chargerCommandes();
             } catch {
                 showMsg("Impossible de joindre le serveur. Vérifiez que le backend tourne sur le port 3000.", "error");
@@ -880,8 +888,8 @@
         }
 
         function logout() {
-            pwd = "";
-            localStorage.removeItem("adminPwd");
+            adminToken = "";
+            localStorage.removeItem("adminToken");
             document.getElementById("login-screen").style.display = "block";
             document.getElementById("admin-panel").style.display = "none";
             document.getElementById("admin-pwd").value = "";
@@ -913,7 +921,7 @@
             showSyphaLoader("Chargement des commandes...");
             try {
                 const res = await fetch(`${API}/api/admin/commandes`, {
-                    headers: { "x-admin-password": pwd }
+                    headers: { "Authorization": `Bearer ${adminToken}` }
                 });
                 commandes = await res.json();
                 afficherCommandes(commandes);
@@ -1225,7 +1233,7 @@
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
-                        "x-admin-password": pwd
+                        "Authorization": `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ statut, notes })
                 });
@@ -1233,7 +1241,7 @@
                 if (res.ok) {
                     fermerModal();
                     await chargerCommandes();
-                    const statsRes = await fetch(`${API}/api/admin/stats`, { headers: { "x-admin-password": pwd } });
+                    const statsRes = await fetch(`${API}/api/admin/stats`, { headers: { "Authorization": `Bearer ${adminToken}` } });
                     afficherStats(await statsRes.json());
                 } else {
                     alert("Erreur lors de la sauvegarde.");
@@ -1268,7 +1276,7 @@
             showSyphaLoader("Chargement des partenaires...");
             try {
                 const res = await fetch(`${API}/api/admin/partenaires`, {
-                    headers: { "x-admin-password": pwd }
+                    headers: { "Authorization": `Bearer ${adminToken}` }
                 });
                 if (!res.ok) {
                     let msg = `Erreur HTTP ${res.status}`;
@@ -1353,7 +1361,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "x-admin-password": pwd
+                        "Authorization": `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ nom, email, telephone, codePromo })
                 });
@@ -1381,7 +1389,7 @@
             try {
                 const res = await fetch(`${API}/api/admin/partenaires/${id}`, {
                     method: "DELETE",
-                    headers: { "x-admin-password": pwd }
+                    headers: { "Authorization": `Bearer ${adminToken}` }
                 });
                 if (res.ok) await chargerPartenaires();
                 else alert("Erreur lors de la suppression.");
@@ -1396,7 +1404,7 @@
             showSyphaLoader("Chargement du détail...");
             try {
                 const res = await fetch(`${API}/api/admin/partenaires/${id}`, {
-                    headers: { "x-admin-password": pwd }
+                    headers: { "Authorization": `Bearer ${adminToken}` }
                 });
                 if (!res.ok) throw new Error("Erreur");
                 const data = await res.json();

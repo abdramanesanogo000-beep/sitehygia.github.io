@@ -369,7 +369,7 @@
 
     <script>
         const API = "https://nslookup-cluster1-bydepfo-mongodb-net-1.onrender.com"; // ← REMPLACER par l'URL Render réelle après déploiement
-        let pwd = localStorage.getItem("adminPwd") || "";
+        let adminToken = localStorage.getItem("adminToken") || "";
         let commandes = [];
         let numeroCourant = "";
         let pageActuelle = 1;
@@ -377,7 +377,7 @@
         let filtreActuel = "Toutes";
 
         // Vérifier si connecté
-        if (!pwd) {
+        if (!adminToken) {
             window.location.href = "admin.html";
         }
 
@@ -409,7 +409,7 @@
             showSyphaLoader("Chargement des commandes...");
             try {
                 const res = await fetch(`${API}/api/admin/commandes`, {
-                    headers: { "x-admin-password": pwd }
+                    headers: { "Authorization": `Bearer ${adminToken}` }
                 });
                 commandes = await res.json();
                 afficherCommandes();
@@ -669,7 +669,7 @@
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
-                        "x-admin-password": pwd
+                        "Authorization": `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ statut, notes })
                 });

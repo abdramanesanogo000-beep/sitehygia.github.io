@@ -977,20 +977,13 @@ async function confirmerCommande(methode) {
     const zoneClient = document.getElementById("livraison-zone")
         ?.value?.trim() || "";
 
-    const articles = panier.map(item => {
-        const produit = produits.find(p => p.id === item.id);
-        return {
-            id: produit.id,
-            nom: produit.nom,
-            prix: produit.prix,
-            quantite: item.quantite,
-            sousTotal: produit.prix * item.quantite
-        };
-    });
-
-    const sousTotalArticles = articles.reduce((sum, a) => sum + a.sousTotal, 0);
+    const articles = panier.map(item => ({
+        id: item.id,
+        quantite: item.quantite
+    }));
     const totals = getCartTotals();
     const partnerCoupon = getPartnerCoupon();
+    const codePromo = activeAppliedCoupon || (partnerCoupon ? partnerCoupon.code : "");
     const isLivraison = methode === "livraison";
 
     // Feedback visuel sur le bouton + loader Sypha
@@ -1015,14 +1008,10 @@ async function confirmerCommande(methode) {
                 email: emailClient || getUtilisateurConnecte()?.email || ""
             },
             articles,
-            total: totals.total,
-            sousTotal: sousTotalArticles,
-            shipping: totals.shipping,
+            codePromo,
+            zoneLivraison: zoneClient,
             modePaiement: MODES_PAIEMENT_LABELS[methode] || methode
         };
-        if (partnerCoupon) {
-            payload.codePromoPartenaire = partnerCoupon.code;
-        }
 
         const res = await fetch(`${BACKEND_URL}/api/commandes`, {
             method: "POST",
@@ -1052,9 +1041,11 @@ async function confirmerCommande(methode) {
         return;
     }
 
+    const totalCommande = data.total || totals.total;
+
     // Paiement à la livraison : pas d'appel PayTech, on confirme directement
     if (isLivraison) {
-        enregistrerCommande(panier, methode, totals.total);
+        enregistrerCommande(panier, methode, totalCommande);
         savePanier([]);
         mettreAJourCompteurPanier();
         window.location.href = `commande-confirmee.html?numero=${numeroCommande}`;
@@ -1068,52 +1059,41 @@ async function confirmerCommande(methode) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 commande_id: numeroCommande,
-                montant: Math.round(totals.total),
-                client: {
-                    nom: nomClient,
-                    telephone: telClient,
-                    adresse: adresseClient,
-                    email: emailClient || ""
-                },
                 methode: methode
             })
         });
 
-        const data = await res.json();
+        const paymentData = await res.json();
 
-        if (data.succes && data.redirect_url) {
+        if (paymentData.succes && paymentData.redirect_url) {
             // Sauvegarder dans l'historique local avant redirection
-            enregistrerCommande(panier, methode, totals.total);
+            enregistrerCommande(panier, methode, totalCommande);
             savePanier([]);
             mettreAJourCompteurPanier();
 
             // Rediriger vers la page de paiement PayTech
-            window.location.href = data.redirect_url;
+            window.location.href = paymentData.redirect_url;
             return;
 
         } else {
-            hideSyphaLoader();
-            alert(
-                "Impossible d'initialiser le paiement.\n" +
-                "Veuillez réessayer ou nous contacter sur WhatsApp."
-            );
-            if (btnConfirmer) {
-                btnConfirmer.textContent = "Confirmer ma commande";
-                btnConfirmer.disabled = false;
-            }
+            // Si le paiement électronique n'est pas disponible, on redirige quand même vers le reçu
+            // avec une mention d'attente. Le client pourra régler plus tard.
+            enregistrerCommande(panier, methode, totalCommande);
+            savePanier([]);
+            mettreAJourCompteurPanier();
+            afficherToast("Votre commande est enregistrée. Finalisez le paiement depuis votre compte.", "info");
+            window.location.href = `commande-confirmee.html?numero=${numeroCommande}`;
         }
 
     } catch (err) {
         hideSyphaLoader();
         console.error("Erreur PayTech:", err);
-        alert(
-            "Le service de paiement est temporairement indisponible.\n" +
-            "Veuillez réessayer dans quelques instants."
-        );
-        if (btnConfirmer) {
-            btnConfirmer.textContent = "Confirmer ma commande";
-            btnConfirmer.disabled = false;
-        }
+        // Même comportement en cas d'erreur réseau
+        enregistrerCommande(panier, methode, totalCommande);
+        savePanier([]);
+        mettreAJourCompteurPanier();
+        afficherToast("Votre commande est enregistrée. Le paiement en ligne est momentanément indisponible.", "info");
+        window.location.href = `commande-confirmee.html?numero=${numeroCommande}`;
     }
 }
 
@@ -1335,17 +1315,30 @@ function initRechercheLive() {
 // SYSTÈME DE COMPTES (API backend Hygia)
 // ===========================================
 
+const ACCESS_TOKEN_KEY = "hygiaAccessToken";
+
+function getAccessToken() {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+function setAccessToken(token) {
+    if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    else localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
 function getUtilisateurConnecte() {
     const data = localStorage.getItem("utilisateurConnecte");
     return data ? JSON.parse(data) : null;
 }
 
-function setUtilisateurConnecte(utilisateur) {
+function setUtilisateurConnecte(utilisateur, token) {
     localStorage.setItem("utilisateurConnecte", JSON.stringify(utilisateur));
+    setAccessToken(token);
 }
 
 function deconnecterUtilisateur() {
     localStorage.removeItem("utilisateurConnecte");
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
 }
 
 async function inscrireUtilisateur(nom, telephone, email, motdepasse) {
@@ -1359,12 +1352,12 @@ async function inscrireUtilisateur(nom, telephone, email, motdepasse) {
 
         const data = await response.json();
 
-        if (data.succes && data.utilisateur) {
+        if (data.succes && data.utilisateur && data.token) {
             setUtilisateurConnecte({
                 nom: data.utilisateur.nom,
                 email: data.utilisateur.email,
-                telephone: telephone
-            });
+                telephone: data.utilisateur.telephone || telephone
+            }, data.token);
             return { succes: true, message: data.message || "Compte créé avec succès !" };
         }
 
@@ -1388,12 +1381,12 @@ async function connecterUtilisateur(email, motdepasse) {
 
         const data = await response.json();
 
-        if (data.succes && data.utilisateur) {
+        if (data.succes && data.utilisateur && data.token) {
             setUtilisateurConnecte({
                 nom: data.utilisateur.nom,
                 email: data.utilisateur.email,
                 telephone: data.utilisateur.telephone || ""
-            });
+            }, data.token);
             return { succes: true, message: data.message || "Connexion réussie !" };
         }
 
@@ -1548,9 +1541,11 @@ function initFormulairesCompte(utilisateur) {
             try {
                 const response = await fetch(`${BACKEND_URL}/api/auth/profil`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getAccessToken()}`
+                    },
                     body: JSON.stringify({
-                        email: utilisateur.email,
                         motdepasse,
                         nom,
                         telephone
@@ -1611,9 +1606,11 @@ function initFormulairesCompte(utilisateur) {
             try {
                 const response = await fetch(`${BACKEND_URL}/api/auth/motdepasse`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getAccessToken()}`
+                    },
                     body: JSON.stringify({
-                        email: utilisateur.email,
                         ancienMotdepasse: ancien,
                         nouveauMotdepasse: nouveau
                     })
@@ -1707,8 +1704,11 @@ async function afficherPageCompte() {
             try {
                 const response = await fetch(`${BACKEND_URL}/api/auth/supprimer`, {
                     method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: utilisateur.email, motdepasse })
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getAccessToken()}`
+                    },
+                    body: JSON.stringify({ motdepasse })
                 });
 
                 const data = await response.json();
@@ -1754,7 +1754,11 @@ async function afficherPageCompte() {
 
     showSyphaLoader("Chargement de vos commandes...");
     try {
-        const res = await fetch(`${BACKEND_URL}/api/mes-commandes?email=${encodeURIComponent(utilisateur.email)}`);
+        const res = await fetch(`${BACKEND_URL}/api/mes-commandes`, {
+            headers: {
+                "Authorization": `Bearer ${getAccessToken()}`
+            }
+        });
         const data = await res.json();
 
         const commandes = (data.succes && data.commandes) ? data.commandes : [];
