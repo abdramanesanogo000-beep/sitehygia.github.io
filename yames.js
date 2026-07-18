@@ -1643,6 +1643,33 @@ function afficherOnglet(onglet, btnClique) {
     if (btnClique) btnClique.classList.add("active");
 }
 
+async function afficherFidelite() {
+    const pointsEl = document.getElementById("stat-points");
+    const codeEl = document.getElementById("info-code-parrainage");
+    if (!pointsEl && !codeEl) return;
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/fidelite/points`, {
+            headers: {
+                "Authorization": `Bearer ${getAccessToken()}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.succes) {
+            if (pointsEl) pointsEl.textContent = (data.pointsFidelite || 0).toLocaleString("fr-FR");
+            if (codeEl) codeEl.textContent = data.codeParrainage || "—";
+        } else {
+            if (pointsEl) pointsEl.textContent = "—";
+            if (codeEl) codeEl.textContent = "—";
+        }
+    } catch (error) {
+        console.error("Erreur chargement fidélité :", error);
+        if (pointsEl) pointsEl.textContent = "—";
+        if (codeEl) codeEl.textContent = "—";
+    }
+}
+
 async function afficherPageCompte() {
     const blocConnecte = document.getElementById("compte-connecte");
     const blocNonConnecte = document.getElementById("compte-non-connecte");
@@ -1679,6 +1706,8 @@ async function afficherPageCompte() {
     if (infoTel) {
         infoTel.textContent = utilisateur.telephone || "—";
     }
+
+    await afficherFidelite();
 
     const btnDeco = document.getElementById("btn-deconnexion");
     if (btnDeco) {
