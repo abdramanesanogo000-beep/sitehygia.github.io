@@ -1104,7 +1104,8 @@ app.delete('/api/admin/produits/:id', verifierAdmin, async (req, res) => {
 
 const JEMENI_API_URL = process.env.JEMENI_API_URL || 'https://jemeni.net/api';
 const JEMENI_API_KEY = process.env.JEMENI_API_KEY;
-const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY;
+const JEMENI_ACCESS_TOKEN = process.env.JEMENI_ACCESS_TOKEN; // Token d'accès utilisateur
+const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY; // Pour la signature
 const JEMENI_PASSPHRASE = process.env.JEMENI_PASSPHRASE;
 
 // Génération de signature HMAC-SHA512 pour Jɛmɛnipay
@@ -1123,7 +1124,7 @@ app.post('/api/paiement/initier', async (req, res) => {
             return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
         }
 
-        if (!JEMENI_API_KEY || !JEMENI_SECRET_KEY || !JEMENI_PASSPHRASE) {
+        if (!JEMENI_API_KEY || !JEMENI_ACCESS_TOKEN || !JEMENI_SECRET_KEY || !JEMENI_PASSPHRASE) {
             return res.status(500).json({ succes: false, erreur: 'Clés Jɛmɛnipay non configurées.' });
         }
 
@@ -1174,7 +1175,7 @@ app.post('/api/paiement/initier', async (req, res) => {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'auth-apiKey': JEMENI_API_KEY,
-                'auth-token': JEMENI_SECRET_KEY,
+                'auth-token': JEMENI_ACCESS_TOKEN,
                 'auth-timestamp': timestamp.toString(),
                 'auth-signature': signature,
                 ...(isSandbox && { 'sandbox': 'true' })
