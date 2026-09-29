@@ -80,6 +80,16 @@ const commandeSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    // Jɛmɛnipay session ID
+    jemeni_session_id: {
+        type: String,
+        default: ''
+    },
+    // Moneroo transaction ID (commenté pour mode pause)
+    moneroo_transaction_id: {
+        type: String,
+        default: ''
+    },
     paytech_token: {
         type: String,
         default: ''

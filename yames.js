@@ -2931,7 +2931,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Rediriger directement vers Moneroo avec Orange Money par défaut
+            // Rediriger directement vers Jɛmɛnipay avec Orange Money par défaut
             confirmerCommande("orange");
         });
     }

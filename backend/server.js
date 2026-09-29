@@ -1098,6 +1098,178 @@ app.delete('/api/admin/produits/:id', verifierAdmin, async (req, res) => {
 // PAIEMENT MONEROO
 // ===========================================
 
+// ===========================================
+// INTÉGRATION JEMENIPAY (MODE ACTIF)
+// ===========================================
+
+const JEMENI_API_URL = process.env.JEMENI_API_URL || 'https://jemeni.net/api';
+const JEMENI_API_KEY = process.env.JEMENI_API_KEY;
+const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY;
+const JEMENI_PASSPHRASE = process.env.JEMENI_PASSPHRASE;
+
+// Génération de signature HMAC-SHA512 pour Jɛmɛnipay
+function generateJemeniSignature(method, endpoint, body, timestamp) {
+    const crypto = require('crypto');
+    const payload = `${method}${endpoint}${JSON.stringify(body)}${timestamp}`;
+    return crypto.createHmac('sha512', JEMENI_SECRET_KEY).update(payload).digest('hex');
+}
+
+// Initier un paiement Jɛmɛnipay (Orange Money, Moov Money, Wave, Cartes)
+app.post('/api/paiement/initier', async (req, res) => {
+    try {
+        const { commande_id, montant, client, methode } = req.body;
+
+        if (!commande_id || !montant || !client) {
+            return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
+        }
+
+        if (!JEMENI_API_KEY || !JEMENI_SECRET_KEY || !JEMENI_PASSPHRASE) {
+            return res.status(500).json({ succes: false, erreur: 'Clés Jɛmɛnipay non configurées.' });
+        }
+
+        // Endpoint et mode (sandbox pour test)
+        const isSandbox = process.env.JEMENI_MODE === 'sandbox';
+        const endpoint = isSandbox ? '/sandbox/v1/checkout/sessions' : '/live/v1/checkout/sessions';
+        const method = 'POST';
+
+        // Timestamp actuel
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        // Préparer le payload selon la documentation Jɛmɛnipay
+        const payload = {
+            amount: Math.round(montant),
+            currency: 'XOF',
+            description: `Commande Hygia ${commande_id}`,
+            metadata: {
+                commande_id: commande_id,
+                client_nom: client.nom,
+                client_tel: client.telephone,
+                methode: methode
+            },
+            customer: {
+                email: client.email || '',
+                name: client.nom || 'Client',
+                phone: client.telephone || ''
+            },
+            // TVA 0% pour l'exonération RCCM
+            tax: {
+                rate: 0,
+                type: 'vat'
+            },
+            // URLs de retour
+            success_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}&status=success`,
+            cancel_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}&status=cancelled`,
+            // Webhook pour notifications
+            webhook_url: `${process.env.BACKEND_URL}/api/paiement/jemeni-webhook`
+        };
+
+        console.log('Jɛmɛnipay Initialize Request:', payload);
+
+        // Générer la signature
+        const signature = generateJemeniSignature(method, endpoint, payload, timestamp);
+
+        const response = await fetch(`${JEMENI_API_URL}${endpoint}`, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'auth-apiKey': JEMENI_API_KEY,
+                'auth-token': JEMENI_SECRET_KEY,
+                'auth-timestamp': timestamp.toString(),
+                'auth-signature': signature,
+                ...(isSandbox && { 'sandbox': 'true' })
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        console.log('Jɛmɛnipay Initialize Response:', data);
+
+        if (data && data.data && data.data.url) {
+            // Mettre à jour la commande avec l'ID de session Jɛmɛnipay
+            await Commande.findOneAndUpdate(
+                { numero: commande_id },
+                {
+                    $set: {
+                        jemeni_session_id: data.data.id || '',
+                        statut: 'En attente paiement',
+                        paiement_confirme: false
+                    }
+                }
+            );
+
+            return res.json({
+                succes: true,
+                redirect_url: data.data.url,
+                session_id: data.data.id
+            });
+        }
+
+        console.error('Erreur Jɛmɛnipay initialize :', data);
+        return res.status(400).json({ succes: false, erreur: 'Erreur initialisation paiement', details: data });
+    } catch (error) {
+        console.error('Erreur POST /api/paiement/initier (Jɛmɛnipay) :', error);
+        return res.status(500).json({ succes: false, erreur: 'Erreur serveur' });
+    }
+});
+
+// Webhook Jɛmɛnipay — notification automatique après paiement
+app.post('/api/paiement/jemeni-webhook', async (req, res) => {
+    try {
+        const { event, data } = req.body;
+
+        console.log('Jɛmɛnipay Webhook reçu:', req.body);
+
+        if (!event || !data) {
+            return res.status(200).json({ status: 'ok' });
+        }
+
+        // Traitement selon le type d'événement
+        if (event === 'checkout.session.completed') {
+            const { session_id, status } = data;
+
+            // Trouver la commande par session_id
+            const commande = await Commande.findOne({ jemeni_session_id: session_id });
+
+            if (!commande) {
+                console.log('⚠️ Webhook Jɛmɛnipay : commande introuvable pour session_id ' + session_id);
+                return res.status(200).json({ status: 'ok' });
+            }
+
+            if (status === 'succeeded') {
+                const commandeConfirmee = await Commande.findOneAndUpdate(
+                    { jemeni_session_id: session_id },
+                    { $set: { statut: 'Confirmée', paiement_confirme: true } },
+                    { new: true }
+                );
+                console.log('✅ Paiement Jɛmɛnipay confirmé : ' + commande.numero);
+
+                if (commandeConfirmee) {
+                    envoyerEmailRecapCommande(commandeConfirmee).catch(err => {
+                        console.error('Erreur email récap commande :', err);
+                    });
+                }
+            } else if (status === 'failed' || status === 'cancelled') {
+                await Commande.findOneAndUpdate(
+                    { jemeni_session_id: session_id },
+                    { $set: { statut: 'Paiement échoué', paiement_confirme: false } }
+                );
+                console.log('❌ Paiement Jɛmɛnipay échoué : ' + commande.numero);
+            }
+        }
+
+        return res.status(200).json({ status: 'ok' });
+    } catch (error) {
+        console.error('Erreur POST /api/paiement/jemeni-webhook :', error);
+        return res.status(200).json({ status: 'ok' });
+    }
+});
+
+// ===========================================
+// INTÉGRATION MONEROO (MODE PAUSE - COMMENTÉ)
+// ===========================================
+
+/*
 const MONEROO_API_URL = 'https://api.moneroo.io/v1/payments/initialize';
 const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
 
@@ -1240,6 +1412,7 @@ app.post('/api/paiement/moneroo-webhook', async (req, res) => {
         return res.status(200).json({ status: 'ok' });
     }
 });
+*/
 
 // Vérifier le statut d'un paiement (appelé depuis commande-confirmee.html)
 app.get('/api/paiement/statut', async (req, res) => {
