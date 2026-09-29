@@ -1124,7 +1124,19 @@ app.post('/api/paiement/initier', async (req, res) => {
             return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
         }
 
+        // Debug logs pour vérifier les variables d'environnement
+        console.log('DEBUG JEMENI API_KEY:', JEMENI_API_KEY ? 'SET' : 'NOT SET');
+        console.log('DEBUG JEMENI ACCESS_TOKEN:', JEMENI_ACCESS_TOKEN ? 'SET' : 'NOT SET');
+        console.log('DEBUG JEMENI SECRET_KEY:', JEMENI_SECRET_KEY ? 'SET' : 'NOT SET');
+        console.log('DEBUG JEMENI PASSPHRASE:', JEMENI_PASSPHRASE ? 'SET' : 'NOT SET');
+
         if (!JEMENI_API_KEY || !JEMENI_ACCESS_TOKEN || !JEMENI_SECRET_KEY || !JEMENI_PASSPHRASE) {
+            console.error('Variables manquantes:', {
+                JEMENI_API_KEY: !!JEMENI_API_KEY,
+                JEMENI_ACCESS_TOKEN: !!JEMENI_ACCESS_TOKEN,
+                JEMENI_SECRET_KEY: !!JEMENI_SECRET_KEY,
+                JEMENI_PASSPHRASE: !!JEMENI_PASSPHRASE
+            });
             return res.status(500).json({ succes: false, erreur: 'Clés Jɛmɛnipay non configurées.' });
         }
 
