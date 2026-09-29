@@ -1142,38 +1142,33 @@ app.post('/api/paiement/initier', async (req, res) => {
 
         // Endpoint et mode (sandbox pour test)
         const isSandbox = process.env.JEMENI_MODE === 'sandbox';
-        const endpoint = isSandbox ? '/sandbox/v1/checkout/sessions' : '/live/v1/checkout/sessions';
+        // Correction de l'endpoint selon la documentation Jɛmɛnipay
+        const endpoint = isSandbox ? '/sandbox/payment' : '/live/payment';
         const method = 'POST';
 
         // Timestamp actuel
         const timestamp = Math.floor(Date.now() / 1000);
 
-        // Préparer le payload selon la documentation Jɛmɛnipay
+        // Préparer le payload selon la documentation Jɛmɛnipay (simplifié)
         const payload = {
             amount: Math.round(montant),
             currency: 'XOF',
             description: `Commande Hygia ${commande_id}`,
-            metadata: {
-                commande_id: commande_id,
-                client_nom: client.nom,
-                client_tel: client.telephone,
-                methode: methode
-            },
             customer: {
                 email: client.email || '',
                 name: client.nom || 'Client',
                 phone: client.telephone || ''
             },
+            // Méthode de paiement (orange, moov, wave, card)
+            payment_method: methode === 'wave' ? 'wave' : methode,
             // TVA 0% pour l'exonération RCCM
-            tax: {
-                rate: 0,
-                type: 'vat'
-            },
+            tax_rate: 0,
             // URLs de retour
-            success_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}&status=success`,
-            cancel_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}&status=cancelled`,
+            return_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`,
             // Webhook pour notifications
-            webhook_url: `${process.env.BACKEND_URL}/api/paiement/jemeni-webhook`
+            webhook_url: `${process.env.BACKEND_URL}/api/paiement/jemeni-webhook`,
+            // Métadonnées pour suivi
+            reference: commande_id
         };
 
         console.log('Jɛmɛnipay Initialize Request:', payload);
