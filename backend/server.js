@@ -1142,8 +1142,8 @@ app.post('/api/paiement/initier', async (req, res) => {
 
         // Endpoint et mode (sandbox pour test)
         const isSandbox = process.env.JEMENI_MODE === 'sandbox';
-        // Correction de l'endpoint selon la documentation Jɛmɛnipay
-        const endpoint = isSandbox ? '/sandbox/payment' : '/live/payment';
+        // Essai avec endpoint direct sans préfixe sandbox/live
+        const endpoint = '/payment';
         const method = 'POST';
 
         // Timestamp actuel
@@ -1189,6 +1189,9 @@ app.post('/api/paiement/initier', async (req, res) => {
             },
             body: JSON.stringify(payload)
         });
+
+        console.log('Jɛmɛnipay API Response Status:', response.status);
+        console.log('Jɛmɛnipay API Response Headers:', Object.fromEntries(response.headers.entries()));
 
         const data = await response.json();
         console.log('Jɛmɛnipay Initialize Response:', data);
