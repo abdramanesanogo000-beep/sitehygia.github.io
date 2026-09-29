@@ -1166,7 +1166,7 @@ app.post('/api/paiement/initier', async (req, res) => {
         const data = await response.json();
         console.log('Moneroo Initialize Response:', data);
 
-        if (data.success && data.data && data.data.checkout_url) {
+        if ((data.success || data.message === 'Transaction initialized successfully') && data.data && data.data.checkout_url) {
             // Mettre à jour la commande avec l'ID de transaction Moneroo
             await Commande.findOneAndUpdate(
                 { numero: commande_id },
