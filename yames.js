@@ -566,7 +566,7 @@ function initLang() {
 // ===========================================
 // 1. DONNÉES PRODUITS (source unique pour tout le site)
 // ===========================================
-const BACKEND_URL = "https://nslookup-cluster1-bydepfo-mongodb-net-1.onrender.com";
+const BACKEND_URL = "https://hygia-backend.onrender.com";
 
 const PRODUITS_HARDCODES = [
     { id: 1,  nom: "Tensiomètre manuel avec stéthoscope",              prix: 15000,  image: "img/tension metre manuel.jpg",                                              categorie: "tensiometre", promo: false, stock: true, description: "Tensiomètre à brassard manuel livré avec stéthoscope monopavillon. Mesure fiable de la pression artérielle sans pile. Idéal pour les cabinets médicaux et pharmacies." },
