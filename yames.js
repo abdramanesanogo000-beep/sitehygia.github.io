@@ -2931,8 +2931,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Rediriger directement vers Moneroo avec carte bancaire par défaut
-            confirmerCommande("carte");
+            // Rediriger directement vers Moneroo avec Orange Money par défaut
+            confirmerCommande("orange");
         });
     }
 
