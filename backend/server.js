@@ -1108,12 +1108,13 @@ const JEMENI_ACCESS_TOKEN = process.env.JEMENI_ACCESS_TOKEN; // Token d'accès u
 const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY; // Pour la signature
 const JEMENI_PASSPHRASE = process.env.JEMENI_PASSPHRASE;
 
-// Génération de signature HMAC-SHA512 pour Jɛmɛnipay (selon documentation officielle)
+// Génération de signature HMAC-SHA512 pour Jɛmɛnipay (avec passphrase comme clé)
 function generateJemeniSignature(method, url, body, timestamp) {
     const crypto = require('crypto');
     // Formule officielle : SK + AK + METHOD + URL + BODY + TIMESTAMP
+    // Utilisation de la PASSPHRASE comme clé pour la signature
     const message = JEMENI_SECRET_KEY + JEMENI_API_KEY + method + url + JSON.stringify(body) + timestamp;
-    return crypto.createHmac('sha512', JEMENI_SECRET_KEY).update(message).digest('hex');
+    return crypto.createHmac('sha512', JEMENI_PASSPHRASE).update(message).digest('hex');
 }
 
 // Initier un paiement Jɛmɛnipay (Orange Money, Moov Money, Wave, Cartes)
@@ -1170,8 +1171,8 @@ app.post('/api/paiement/initier', async (req, res) => {
 
         console.log('Jɛmɛnipay Initialize Request:', payload);
 
-        // URL complète pour la signature (BASE_URL uniquement pour POST selon doc)
-        const urlForSignature = JEMENI_API_URL; // Pour POST, seulement BASE_URL
+        // URL complète pour la signature (essai avec URL complète)
+        const urlForSignature = `${JEMENI_API_URL}${endpoint}`; // URL complète avec endpoint
         const fullUrl = `${JEMENI_API_URL}${endpoint}`; // URL complète pour l'appel
 
         // Générer la signature avec la formule officielle
