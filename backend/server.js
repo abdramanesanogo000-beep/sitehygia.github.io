@@ -1108,11 +1108,12 @@ const JEMENI_ACCESS_TOKEN = process.env.JEMENI_ACCESS_TOKEN; // Token d'accès u
 const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY; // Pour la signature
 const JEMENI_PASSPHRASE = process.env.JEMENI_PASSPHRASE;
 
-// Génération de signature HMAC-SHA512 pour Jɛmɛnipay
-function generateJemeniSignature(method, endpoint, body, timestamp) {
+// Génération de signature HMAC-SHA512 pour Jɛmɛnipay (selon documentation officielle)
+function generateJemeniSignature(method, url, body, timestamp) {
     const crypto = require('crypto');
-    const payload = `${method}${endpoint}${JSON.stringify(body)}${timestamp}`;
-    return crypto.createHmac('sha512', JEMENI_SECRET_KEY).update(payload).digest('hex');
+    // Formule officielle : SK + AK + METHOD + URL + BODY + TIMESTAMP
+    const message = JEMENI_SECRET_KEY + JEMENI_API_KEY + method + url + JSON.stringify(body) + timestamp;
+    return crypto.createHmac('sha512', JEMENI_SECRET_KEY).update(message).digest('hex');
 }
 
 // Initier un paiement Jɛmɛnipay (Orange Money, Moov Money, Wave, Cartes)
@@ -1142,41 +1143,49 @@ app.post('/api/paiement/initier', async (req, res) => {
 
         // Endpoint et mode (sandbox pour test)
         const isSandbox = process.env.JEMENI_MODE === 'sandbox';
-        // Essai avec endpoint direct sans préfixe sandbox/live
-        const endpoint = '/payment';
+        // Endpoint correct selon documentation : /sandbox/payments
+        const endpoint = isSandbox ? '/sandbox/payments' : '/live/payments';
         const method = 'POST';
 
         // Timestamp actuel
         const timestamp = Math.floor(Date.now() / 1000);
 
-        // Préparer le payload selon la documentation Jɛmɛnipay (simplifié)
+        // Préparer le payload selon la documentation officielle Jɛmɛnipay
         const payload = {
+            customer_phone: client.telephone.replace('+223', ''), // Sans code pays pour Mali
             amount: Math.round(montant),
-            currency: 'XOF',
-            description: `Commande Hygia ${commande_id}`,
-            customer: {
-                email: client.email || '',
-                name: client.nom || 'Client',
-                phone: client.telephone || ''
-            },
-            // Méthode de paiement (orange, moov, wave, card)
-            payment_method: methode === 'wave' ? 'wave' : methode,
-            // TVA 0% pour l'exonération RCCM
-            tax_rate: 0,
-            // URLs de retour
+            country_code: 'ml', // Mali
+            notifiable: true, // Envoyer notification au client
             return_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`,
-            // Webhook pour notifications
-            webhook_url: `${process.env.BACKEND_URL}/api/paiement/jemeni-webhook`,
-            // Métadonnées pour suivi
-            reference: commande_id
+            code_merchant: commande_id, // Référence interne
+            source: 'web', // Origine du paiement
+            reference: commande_id, // Référence externe
+            metadata: {
+                commande_id: commande_id,
+                client_nom: client.nom,
+                client_email: client.email,
+                methode_paiement: methode
+            }
         };
 
         console.log('Jɛmɛnipay Initialize Request:', payload);
 
-        // Générer la signature
-        const signature = generateJemeniSignature(method, endpoint, payload, timestamp);
+        // URL complète pour la signature (BASE_URL uniquement pour POST selon doc)
+        const urlForSignature = JEMENI_API_URL; // Pour POST, seulement BASE_URL
+        const fullUrl = `${JEMENI_API_URL}${endpoint}`; // URL complète pour l'appel
 
-        const response = await fetch(`${JEMENI_API_URL}${endpoint}`, {
+        // Générer la signature avec la formule officielle
+        const signature = generateJemeniSignature(method, urlForSignature, payload, timestamp);
+
+        console.log('Jɛmɛnipay Signature Debug:', {
+            method,
+            url: urlForSignature,
+            body: JSON.stringify(payload),
+            timestamp,
+            signature: signature.substring(0, 20) + '...' // Afficher seulement les premiers caractères
+        });
+
+        const response = await fetch(fullUrl, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
