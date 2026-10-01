@@ -1105,16 +1105,17 @@ app.delete('/api/admin/produits/:id', verifierAdmin, async (req, res) => {
 const JEMENI_API_URL = process.env.JEMENI_API_URL || 'https://jemeni.net/api';
 const JEMENI_API_KEY = process.env.JEMENI_API_KEY;
 const JEMENI_ACCESS_TOKEN = process.env.JEMENI_ACCESS_TOKEN; // Token d'accès utilisateur
-const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY; // Pour la signature
+const JEMENI_SECRET_KEY = process.env.JEMENI_SECRET_KEY; // Clé secrète API
+const JEMENI_HMAC_KEY = process.env.JEMENI_HMAC_KEY || 'hM49hQjmWFHTiKlEdSC1xcSeeXNDlaevG5tsAmAfxSx9qktcRtj0O7DDQ8OB9s8T'; // Clé secrète HMAC spécifique
 const JEMENI_PASSPHRASE = process.env.JEMENI_PASSPHRASE;
 
-// Génération de signature HMAC-SHA512 pour Jɛmɛnipay (selon documentation exacte)
+// Génération de signature HMAC-SHA512 pour Jɛmɛnipay (avec clé HMAC spécifique)
 function generateJemeniSignature(method, url, body, timestamp) {
     const crypto = require('crypto');
     // Formule exacte de la doc : SK + AK + METHOD + URL + BODY + TIMESTAMP (sans séparateur)
-    // SK = Secret Key (pas passphrase), AK = API Key, clé = SK
+    // Utilisation de la clé HMAC spécifique comme clé pour la signature
     const message = JEMENI_SECRET_KEY + JEMENI_API_KEY + method + url + JSON.stringify(body) + timestamp;
-    return crypto.createHmac('sha512', JEMENI_SECRET_KEY).update(message).digest('hex');
+    return crypto.createHmac('sha512', JEMENI_HMAC_KEY).update(message).digest('hex');
 }
 
 // Initier un paiement Jɛmɛnipay (Orange Money, Moov Money, Wave, Cartes)
@@ -1130,14 +1131,14 @@ app.post('/api/paiement/initier', async (req, res) => {
         console.log('DEBUG JEMENI API_KEY:', JEMENI_API_KEY ? 'SET' : 'NOT SET');
         console.log('DEBUG JEMENI ACCESS_TOKEN:', JEMENI_ACCESS_TOKEN ? 'SET' : 'NOT SET');
         console.log('DEBUG JEMENI SECRET_KEY:', JEMENI_SECRET_KEY ? 'SET' : 'NOT SET');
-        console.log('DEBUG JEMENI PASSPHRASE:', JEMENI_PASSPHRASE ? 'SET' : 'NOT SET');
+        console.log('DEBUG JEMENI HMAC_KEY:', JEMENI_HMAC_KEY ? 'SET' : 'NOT SET');
 
-        if (!JEMENI_API_KEY || !JEMENI_ACCESS_TOKEN || !JEMENI_SECRET_KEY || !JEMENI_PASSPHRASE) {
+        if (!JEMENI_API_KEY || !JEMENI_ACCESS_TOKEN || !JEMENI_SECRET_KEY || !JEMENI_HMAC_KEY) {
             console.error('Variables manquantes:', {
                 JEMENI_API_KEY: !!JEMENI_API_KEY,
                 JEMENI_ACCESS_TOKEN: !!JEMENI_ACCESS_TOKEN,
                 JEMENI_SECRET_KEY: !!JEMENI_SECRET_KEY,
-                JEMENI_PASSPHRASE: !!JEMENI_PASSPHRASE
+                JEMENI_HMAC_KEY: !!JEMENI_HMAC_KEY
             });
             return res.status(500).json({ succes: false, erreur: 'Clés Jɛmɛnipay non configurées.' });
         }
