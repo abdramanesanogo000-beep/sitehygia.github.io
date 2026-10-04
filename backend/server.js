@@ -1099,13 +1099,15 @@ app.delete('/api/admin/produits/:id', verifierAdmin, async (req, res) => {
 // ===========================================
 
 // ===========================================
-// INTÉGRATION MONEROO (MODE ACTIF)
+// INTÉGRATION PAYTECH (MODE ACTIF)
 // ===========================================
 
-const MONEROO_API_URL = 'https://api.moneroo.io/v1/payments/initialize';
-const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
+const PAYTECH_API_URL = 'https://paytech.sn/api/payment/submit';
+const PAYTECH_API_KEY = process.env.PAYTECH_API_KEY;
+const PAYTECH_API_SECRET = process.env.PAYTECH_API_SECRET;
+const PAYTECH_ENV = process.env.PAYTECH_ENV || 'test'; // 'test' ou 'prod'
 
-// Initier un paiement Moneroo (Orange Money, Moov Money, Mobi Cash au Mali)
+// Initier un paiement PayTech (Orange Money, Moov Money, Wave, etc.)
 app.post('/api/paiement/initier', async (req, res) => {
     try {
         const { commande_id, montant, client, methode } = req.body;
@@ -1114,71 +1116,52 @@ app.post('/api/paiement/initier', async (req, res) => {
             return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
         }
 
-        if (!MONEROO_SECRET_KEY) {
-            return res.status(500).json({ succes: false, erreur: 'Clé Moneroo non configurée.' });
+        if (!PAYTECH_API_KEY || !PAYTECH_API_SECRET) {
+            return res.status(500).json({ succes: false, erreur: 'Clés PayTech non configurées.' });
         }
 
-        // Mapper la méthode de paiement aux codes Moneroo pour le Mali
-        let methods = [];
-        if (methode === 'orange') {
-            methods = ['orange_ml'];
-        } else if (methode === 'wave') {
-            // Wave utilise Orange Money via Moneroo
-            methods = ['orange_ml'];
-        } else if (methode === 'moov') {
-            methods = ['moov_ml'];
-        } else if (methode === 'mobicash') {
-            // Mobicash Mali
-            methods = ['mobi_cash_ml'];
-        } else {
-            // Si aucune méthode spécifique, autoriser les méthodes Mali valides
-            methods = ['orange_ml', 'moov_ml', 'mobi_cash_ml'];
-        }
-
+        // Payload selon documentation PayTech
         const payload = {
-            amount: Math.round(montant),
+            item_name: `Commande Hygia ${commande_id}`,
+            item_price: Math.round(montant),
             currency: 'XOF',
-            description: `Commande Hygia ${commande_id}`,
-            return_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`,
-            customer: {
-                email: client.email || '',
-                first_name: client.nom || 'Client',
-                last_name: client.prenom || 'Hygia',
-                phone: client.telephone || ''
-            },
-            metadata: {
+            ref_command: commande_id,
+            command_name: `Commande Hygia ${commande_id}`,
+            env: PAYTECH_ENV,
+            customer_surname: client.nom || 'Client',
+            customer_name: client.prenom || 'Hygia',
+            customer_email: client.email || '',
+            customer_phone_number: client.telephone || '',
+            custom_field: JSON.stringify({
                 commande_id: commande_id,
                 client_nom: client.nom,
                 client_tel: client.telephone,
                 methode: methode
-            },
-            methods: methods,
-            // Spécifier la passerelle PayDunya
-            provider: 'paydunya'
+            })
         };
 
-        console.log('Moneroo Initialize Request:', payload);
+        console.log('PayTech Initialize Request:', payload);
 
-        const response = await fetch(MONEROO_API_URL, {
+        const response = await fetch(PAYTECH_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${MONEROO_SECRET_KEY}`,
-                'Accept': 'application/json'
+                'API_KEY': PAYTECH_API_KEY,
+                'API_SECRET': PAYTECH_API_SECRET
             },
             body: JSON.stringify(payload)
         });
 
         const data = await response.json();
-        console.log('Moneroo Initialize Response:', data);
+        console.log('PayTech Initialize Response:', data);
 
-        if ((data.success || data.message === 'Transaction initialized successfully') && data.data && data.data.checkout_url) {
-            // Mettre à jour la commande avec l'ID de transaction Moneroo
+        if (data.success === true || data.success === 1) {
+            // Mettre à jour la commande avec le token PayTech
             await Commande.findOneAndUpdate(
                 { numero: commande_id },
                 {
                     $set: {
-                        moneroo_transaction_id: data.data.id || '',
+                        paytech_token: data.token || '',
                         statut: 'En attente paiement',
                         paiement_confirme: false
                     }
@@ -1187,62 +1170,60 @@ app.post('/api/paiement/initier', async (req, res) => {
 
             return res.json({
                 succes: true,
-                redirect_url: data.data.checkout_url,
-                transaction_id: data.data.id
+                redirect_url: data.redirect_url || data.url,
+                token: data.token
             });
         }
 
-        console.error('Erreur Moneroo /v1/payments/initialize :', data);
+        console.error('Erreur PayTech /api/payment/submit :', data);
         return res.status(400).json({ succes: false, erreur: 'Erreur initialisation paiement', details: data });
     } catch (error) {
-        console.error('Erreur POST /api/paiement/initier (Moneroo) :', error);
+        console.error('Erreur POST /api/paiement/initier (PayTech) :', error);
         return res.status(500).json({ succes: false, erreur: 'Erreur serveur' });
     }
 });
 
-// Webhook Moneroo — notification automatique après paiement
-app.post('/api/paiement/moneroo-webhook', async (req, res) => {
+// Webhook PayTech (IPN) — notification automatique après paiement
+app.post('/api/paiement/paytech-ipn', async (req, res) => {
     try {
-        const { data } = req.body;
+        const body = req.body;
 
-        console.log('Moneroo Webhook reçu:', req.body);
+        console.log('PayTech IPN reçu:', body);
 
-        if (!data || !data.id) {
+        if (!body || !body.type_event) {
             return res.status(200).json({ status: 'ok' });
         }
 
-        // Trouver la commande par transaction_id
-        const commande = await Commande.findOne({ moneroo_transaction_id: data.id });
+        // Traitement selon le type d'événement
+        if (body.type_event === 'sale_complete') {
+            const ref_command = body.ref_command;
+            const token = body.token;
 
-        if (!commande) {
-            console.log('⚠️ Webhook Moneroo : commande introuvable pour transaction_id ' + data.id);
-            return res.status(200).json({ status: 'ok' });
-        }
+            // Trouver la commande par ref_command
+            const commande = await Commande.findOne({ numero: ref_command });
 
-        if (data.status === 'success') {
+            if (!commande) {
+                console.log('⚠️ IPN PayTech : commande introuvable pour ref_command ' + ref_command);
+                return res.status(200).json({ status: 'ok' });
+            }
+
             const commandeConfirmee = await Commande.findOneAndUpdate(
-                { moneroo_transaction_id: data.id },
+                { numero: ref_command },
                 { $set: { statut: 'Confirmée', paiement_confirme: true } },
                 { new: true }
             );
-            console.log('✅ Paiement Moneroo confirmé : ' + commande.numero);
+            console.log('✅ Paiement PayTech confirmé : ' + ref_command);
 
             if (commandeConfirmee) {
                 envoyerEmailRecapCommande(commandeConfirmee).catch(err => {
                     console.error('Erreur email récap commande :', err);
                 });
             }
-        } else if (data.status === 'failed' || data.status === 'cancelled') {
-            await Commande.findOneAndUpdate(
-                { moneroo_transaction_id: data.id },
-                { $set: { statut: 'Paiement échoué', paiement_confirme: false } }
-            );
-            console.log('❌ Paiement Moneroo échoué : ' + commande.numero);
         }
 
         return res.status(200).json({ status: 'ok' });
     } catch (error) {
-        console.error('Erreur POST /api/paiement/moneroo-webhook :', error);
+        console.error('Erreur POST /api/paiement/paytech-ipn :', error);
         return res.status(200).json({ status: 'ok' });
     }
 });
