@@ -1229,6 +1229,155 @@ app.post('/api/paiement/paytech-ipn', async (req, res) => {
 });
 
 // ===========================================
+// INTÉGRATION MONEROO (MODE PAUSE - COMMENTÉ)
+// ===========================================
+
+/*
+const MONEROO_API_URL = 'https://api.moneroo.io/v1/payments/initialize';
+const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
+
+// Initier un paiement Moneroo (Orange Money, Moov Money, Mobi Cash au Mali)
+app.post('/api/paiement/initier', async (req, res) => {
+    try {
+        const { commande_id, montant, client, methode } = req.body;
+
+        if (!commande_id || !montant || !client) {
+            return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
+        }
+
+        if (!MONEROO_SECRET_KEY) {
+            return res.status(500).json({ succes: false, erreur: 'Clé Moneroo non configurée.' });
+        }
+
+        // Mapper la méthode de paiement aux codes Moneroo pour le Mali
+        let methods = [];
+        if (methode === 'orange') {
+            methods = ['orange_ml'];
+        } else if (methode === 'wave') {
+            // Wave utilise Orange Money via Moneroo
+            methods = ['orange_ml'];
+        } else if (methode === 'moov') {
+            methods = ['moov_ml'];
+        } else if (methode === 'mobicash') {
+            // Mobicash Mali
+            methods = ['mobi_cash_ml'];
+        } else {
+            // Si aucune méthode spécifique, autoriser les méthodes Mali valides
+            methods = ['orange_ml', 'moov_ml', 'mobi_cash_ml'];
+        }
+
+        const payload = {
+            amount: Math.round(montant),
+            currency: 'XOF',
+            description: `Commande Hygia ${commande_id}`,
+            return_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`,
+            customer: {
+                email: client.email || '',
+                first_name: client.nom || 'Client',
+                last_name: client.prenom || 'Hygia',
+                phone: client.telephone || ''
+            },
+            metadata: {
+                commande_id: commande_id,
+                client_nom: client.nom,
+                client_tel: client.telephone,
+                methode: methode
+            },
+            methods: methods
+        };
+
+        console.log('Moneroo Initialize Request:', payload);
+
+        const response = await fetch(MONEROO_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${MONEROO_SECRET_KEY}`,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        console.log('Moneroo Initialize Response:', data);
+
+        if ((data.success || data.message === 'Transaction initialized successfully') && data.data && data.data.checkout_url) {
+            // Mettre à jour la commande avec l'ID de transaction Moneroo
+            await Commande.findOneAndUpdate(
+                { numero: commande_id },
+                {
+                    $set: {
+                        moneroo_transaction_id: data.data.id || '',
+                        statut: 'En attente paiement',
+                        paiement_confirme: false
+                    }
+                }
+            );
+
+            return res.json({
+                succes: true,
+                redirect_url: data.data.checkout_url,
+                transaction_id: data.data.id
+            });
+        }
+
+        console.error('Erreur Moneroo /v1/payments/initialize :', data);
+        return res.status(400).json({ succes: false, erreur: 'Erreur initialisation paiement', details: data });
+    } catch (error) {
+        console.error('Erreur POST /api/paiement/initier (Moneroo) :', error);
+        return res.status(500).json({ succes: false, erreur: 'Erreur serveur' });
+    }
+});
+
+// Webhook Moneroo — notification automatique après paiement
+app.post('/api/paiement/moneroo-webhook', async (req, res) => {
+    try {
+        const { data } = req.body;
+
+        console.log('Moneroo Webhook reçu:', req.body);
+
+        if (!data || !data.id) {
+            return res.status(200).json({ status: 'ok' });
+        }
+
+        // Trouver la commande par transaction_id
+        const commande = await Commande.findOne({ moneroo_transaction_id: data.id });
+
+        if (!commande) {
+            console.log('⚠️ Webhook Moneroo : commande introuvable pour transaction_id ' + data.id);
+            return res.status(200).json({ status: 'ok' });
+        }
+
+        if (data.status === 'success') {
+            const commandeConfirmee = await Commande.findOneAndUpdate(
+                { moneroo_transaction_id: data.id },
+                { $set: { statut: 'Confirmée', paiement_confirme: true } },
+                { new: true }
+            );
+            console.log('✅ Paiement Moneroo confirmé : ' + commande.numero);
+
+            if (commandeConfirmee) {
+                envoyerEmailRecapCommande(commandeConfirmee).catch(err => {
+                    console.error('Erreur email récap commande :', err);
+                });
+            }
+        } else if (data.status === 'failed' || data.status === 'cancelled') {
+            await Commande.findOneAndUpdate(
+                { moneroo_transaction_id: data.id },
+                { $set: { statut: 'Paiement échoué', paiement_confirme: false } }
+            );
+            console.log('❌ Paiement Moneroo échoué : ' + commande.numero);
+        }
+
+        return res.status(200).json({ status: 'ok' });
+    } catch (error) {
+        console.error('Erreur POST /api/paiement/moneroo-webhook :', error);
+        return res.status(200).json({ status: 'ok' });
+    }
+});
+*/
+
+// ===========================================
 // INTÉGRATION JEMENIPAY (MODE PAUSE - COMMENTÉ)
 // ===========================================
 
