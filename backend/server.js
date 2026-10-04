@@ -1152,7 +1152,9 @@ app.post('/api/paiement/initier', async (req, res) => {
                 client_tel: client.telephone,
                 methode: methode
             },
-            methods: methods
+            methods: methods,
+            // Spécifier la passerelle PayDunya
+            provider: 'paydunya'
         };
 
         console.log('Moneroo Initialize Request:', payload);
