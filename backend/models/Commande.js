@@ -80,8 +80,8 @@ const commandeSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    // PayTech token (actif)
-    paytech_token: {
+    // Moneroo transaction ID (actif)
+    moneroo_transaction_id: {
         type: String,
         default: ''
     },
@@ -90,8 +90,8 @@ const commandeSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    // Moneroo transaction ID (en commentaire)
-    moneroo_transaction_id: {
+    // PayTech token (en commentaire)
+    paytech_token: {
         type: String,
         default: ''
     },

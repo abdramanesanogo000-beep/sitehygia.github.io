@@ -1099,140 +1099,9 @@ app.delete('/api/admin/produits/:id', verifierAdmin, async (req, res) => {
 // ===========================================
 
 // ===========================================
-// INTÉGRATION PAYTECH (MODE ACTIF)
+// INTÉGRATION MONEROO (MODE ACTIF)
 // ===========================================
 
-const PAYTECH_API_URL = 'https://paytech.sn/api/payment/submit';
-const PAYTECH_API_KEY = process.env.PAYTECH_API_KEY;
-const PAYTECH_API_SECRET = process.env.PAYTECH_API_SECRET;
-const PAYTECH_ENV = process.env.PAYTECH_ENV || 'test'; // 'test' ou 'prod'
-
-// Initier un paiement PayTech (Orange Money, Moov Money, Wave, etc.)
-app.post('/api/paiement/initier', async (req, res) => {
-    try {
-        const { commande_id, montant, client, methode } = req.body;
-
-        if (!commande_id || !montant || !client) {
-            return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
-        }
-
-        if (!PAYTECH_API_KEY || !PAYTECH_API_SECRET) {
-            return res.status(500).json({ succes: false, erreur: 'Clés PayTech non configurées.' });
-        }
-
-        // Payload selon documentation PayTech
-        const payload = {
-            item_name: `Commande Hygia ${commande_id}`,
-            item_price: Math.round(montant),
-            currency: 'XOF',
-            ref_command: commande_id,
-            command_name: `Commande Hygia ${commande_id}`,
-            env: PAYTECH_ENV,
-            customer_surname: client.nom || 'Client',
-            customer_name: client.prenom || 'Hygia',
-            customer_email: client.email || '',
-            customer_phone_number: client.telephone || '',
-            custom_field: JSON.stringify({
-                commande_id: commande_id,
-                client_nom: client.nom,
-                client_tel: client.telephone,
-                methode: methode
-            })
-        };
-
-        console.log('PayTech Initialize Request:', payload);
-
-        const response = await fetch(PAYTECH_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'API_KEY': PAYTECH_API_KEY,
-                'API_SECRET': PAYTECH_API_SECRET
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-        console.log('PayTech Initialize Response:', data);
-
-        if (data.success === true || data.success === 1) {
-            // Mettre à jour la commande avec le token PayTech
-            await Commande.findOneAndUpdate(
-                { numero: commande_id },
-                {
-                    $set: {
-                        paytech_token: data.token || '',
-                        statut: 'En attente paiement',
-                        paiement_confirme: false
-                    }
-                }
-            );
-
-            return res.json({
-                succes: true,
-                redirect_url: data.redirect_url || data.url,
-                token: data.token
-            });
-        }
-
-        console.error('Erreur PayTech /api/payment/submit :', data);
-        return res.status(400).json({ succes: false, erreur: 'Erreur initialisation paiement', details: data });
-    } catch (error) {
-        console.error('Erreur POST /api/paiement/initier (PayTech) :', error);
-        return res.status(500).json({ succes: false, erreur: 'Erreur serveur' });
-    }
-});
-
-// Webhook PayTech (IPN) — notification automatique après paiement
-app.post('/api/paiement/paytech-ipn', async (req, res) => {
-    try {
-        const body = req.body;
-
-        console.log('PayTech IPN reçu:', body);
-
-        if (!body || !body.type_event) {
-            return res.status(200).json({ status: 'ok' });
-        }
-
-        // Traitement selon le type d'événement
-        if (body.type_event === 'sale_complete') {
-            const ref_command = body.ref_command;
-            const token = body.token;
-
-            // Trouver la commande par ref_command
-            const commande = await Commande.findOne({ numero: ref_command });
-
-            if (!commande) {
-                console.log('⚠️ IPN PayTech : commande introuvable pour ref_command ' + ref_command);
-                return res.status(200).json({ status: 'ok' });
-            }
-
-            const commandeConfirmee = await Commande.findOneAndUpdate(
-                { numero: ref_command },
-                { $set: { statut: 'Confirmée', paiement_confirme: true } },
-                { new: true }
-            );
-            console.log('✅ Paiement PayTech confirmé : ' + ref_command);
-
-            if (commandeConfirmee) {
-                envoyerEmailRecapCommande(commandeConfirmee).catch(err => {
-                    console.error('Erreur email récap commande :', err);
-                });
-            }
-        }
-
-        return res.status(200).json({ status: 'ok' });
-    } catch (error) {
-        console.error('Erreur POST /api/paiement/paytech-ipn :', error);
-        return res.status(200).json({ status: 'ok' });
-    }
-});
-
-// ===========================================
-// INTÉGRATION MONEROO (MODE PAUSE - COMMENTÉ)
-// ===========================================
-
-/*
 const MONEROO_API_URL = 'https://api.moneroo.io/v1/payments/initialize';
 const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
 
@@ -1372,6 +1241,137 @@ app.post('/api/paiement/moneroo-webhook', async (req, res) => {
         return res.status(200).json({ status: 'ok' });
     } catch (error) {
         console.error('Erreur POST /api/paiement/moneroo-webhook :', error);
+        return res.status(200).json({ status: 'ok' });
+    }
+});
+
+// ===========================================
+// INTÉGRATION PAYTECH (MODE PAUSE - COMMENTÉ)
+// ===========================================
+
+/*
+const PAYTECH_API_URL = 'https://paytech.sn/api/payment/submit';
+const PAYTECH_API_KEY = process.env.PAYTECH_API_KEY;
+const PAYTECH_API_SECRET = process.env.PAYTECH_API_SECRET;
+const PAYTECH_ENV = process.env.PAYTECH_ENV || 'test'; // 'test' ou 'prod'
+
+// Initier un paiement PayTech (Orange Money, Moov Money, Wave, etc.)
+app.post('/api/paiement/initier', async (req, res) => {
+    try {
+        const { commande_id, montant, client, methode } = req.body;
+
+        if (!commande_id || !montant || !client) {
+            return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
+        }
+
+        if (!PAYTECH_API_KEY || !PAYTECH_API_SECRET) {
+            return res.status(500).json({ succes: false, erreur: 'Clés PayTech non configurées.' });
+        }
+
+        // Payload selon documentation PayTech
+        const payload = {
+            item_name: `Commande Hygia ${commande_id}`,
+            item_price: Math.round(montant),
+            currency: 'XOF',
+            ref_command: commande_id,
+            command_name: `Commande Hygia ${commande_id}`,
+            env: PAYTECH_ENV,
+            customer_surname: client.nom || 'Client',
+            customer_name: client.prenom || 'Hygia',
+            customer_email: client.email || '',
+            customer_phone_number: client.telephone || '',
+            custom_field: JSON.stringify({
+                commande_id: commande_id,
+                client_nom: client.nom,
+                client_tel: client.telephone,
+                methode: methode
+            })
+        };
+
+        console.log('PayTech Initialize Request:', payload);
+
+        const response = await fetch(PAYTECH_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'API_KEY': PAYTECH_API_KEY,
+                'API_SECRET': PAYTECH_API_SECRET
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        console.log('PayTech Initialize Response:', data);
+
+        if (data.success === true || data.success === 1) {
+            // Mettre à jour la commande avec le token PayTech
+            await Commande.findOneAndUpdate(
+                { numero: commande_id },
+                {
+                    $set: {
+                        paytech_token: data.token || '',
+                        statut: 'En attente paiement',
+                        paiement_confirme: false
+                    }
+                }
+            );
+
+            return res.json({
+                succes: true,
+                redirect_url: data.redirect_url || data.url,
+                token: data.token
+            });
+        }
+
+        console.error('Erreur PayTech /api/payment/submit :', data);
+        return res.status(400).json({ succes: false, erreur: 'Erreur initialisation paiement', details: data });
+    } catch (error) {
+        console.error('Erreur POST /api/paiement/initier (PayTech) :', error);
+        return res.status(500).json({ succes: false, erreur: 'Erreur serveur' });
+    }
+});
+
+// Webhook PayTech (IPN) — notification automatique après paiement
+app.post('/api/paiement/paytech-ipn', async (req, res) => {
+    try {
+        const body = req.body;
+
+        console.log('PayTech IPN reçu:', body);
+
+        if (!body || !body.type_event) {
+            return res.status(200).json({ status: 'ok' });
+        }
+
+        // Traitement selon le type d'événement
+        if (body.type_event === 'sale_complete') {
+            const ref_command = body.ref_command;
+            const token = body.token;
+
+            // Trouver la commande par ref_command
+            const commande = await Commande.findOne({ numero: ref_command });
+
+            if (!commande) {
+                console.log('⚠️ IPN PayTech : commande introuvable pour ref_command ' + ref_command);
+                return res.status(200).json({ status: 'ok' });
+            }
+
+            const commandeConfirmee = await Commande.findOneAndUpdate(
+                { numero: ref_command },
+                { $set: { statut: 'Confirmée', paiement_confirme: true } },
+                { new: true }
+            );
+            console.log('✅ Paiement PayTech confirmé : ' + ref_command);
+
+            if (commandeConfirmee) {
+                envoyerEmailRecapCommande(commandeConfirmee).catch(err => {
+                    console.error('Erreur email récap commande :', err);
+                });
+            }
+        }
+
+        return res.status(200).json({ status: 'ok' });
+    } catch (error) {
+        console.error('Erreur POST /api/paiement/paytech-ipn :', error);
         return res.status(200).json({ status: 'ok' });
     }
 });
