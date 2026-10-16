@@ -1674,6 +1674,61 @@ footer p {
     font-size: 16px;
 }
 
+.paiement-section {
+    background: #fff;
+    border: 1px solid #d7e6f9;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+
+.paiement-section h2 {
+    font-size: 15px;
+    font-weight: bold;
+    color: #0C447C;
+    margin: 0 0 12px;
+}
+
+.paiement-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.paiement-option {
+    display: block;
+    cursor: pointer;
+}
+
+.paiement-option input[type="radio"] {
+    display: none;
+}
+
+.paiement-option-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border: 2px solid #e8f0fb;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.paiement-option input[type="radio"]:checked + .paiement-option-content {
+    border-color: #185FA5;
+    background: #f0f7ff;
+}
+
+.paiement-icon {
+    font-size: 20px;
+}
+
+.paiement-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
 .coupon-row button {
     background: #25D366;
     color: #fff;

@@ -664,7 +664,7 @@ app.post('/api/commandes', async (req, res) => {
         // Déterminer le statut selon le mode de paiement
         const modeNormalise = modePaiement.toLowerCase();
         const estPaiementLivraison = modeNormalise.includes('livraison');
-        const statut = estPaiementLivraison ? 'En attente' : 'En attente paiement';
+        const statut = estPaiementLivraison ? 'Confirmée' : 'En attente paiement';
 
         const commande = new Commande({
             client,
@@ -1597,6 +1597,22 @@ app.get('/api/paiement/statut', async (req, res) => {
     }
 });
 
+// Récupérer le détail d'une commande par son numéro (pour la page de détail)
+app.get('/api/commandes/:numero', async (req, res) => {
+    try {
+        const commande = await Commande.findOne({ numero: req.params.numero });
+
+        if (!commande) {
+            return res.status(404).json({ erreur: 'Commande introuvable' });
+        }
+
+        return res.json(commande);
+    } catch (error) {
+        console.error('Erreur GET /api/commandes/:numero :', error);
+        return res.status(500).json({ erreur: 'Erreur serveur.' });
+    }
+});
+
 // Lister toutes les commandes (admin)
 app.get('/api/admin/commandes', verifierAdmin, async (req, res) => {
     try {
@@ -1629,7 +1645,7 @@ app.patch('/api/admin/commandes/:numero/statut', verifierAdmin, async (req, res)
     try {
         const { statut, notes } = req.body;
 
-        const statutsValides = ['En attente', 'Payé non livré', 'Payé livré', 'Annulée'];
+        const statutsValides = ['En attente', 'Confirmée', 'En livraison', 'Livrée', 'Annulée', 'Paiement échoué'];
         if (statut && !statutsValides.includes(statut)) {
             return res.status(400).json({ erreur: 'Statut invalide.' });
         }

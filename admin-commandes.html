@@ -66,12 +66,17 @@
             color: #d68910;
         }
 
-        .statut-badge.paye-non-livre {
+        .statut-badge.confirmee {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .statut-badge.en-livraison {
             background: #d6eaf8;
             color: #1a5276;
         }
 
-        .statut-badge.paye-livre {
+        .statut-badge.livree {
             background: #e8f8f5;
             color: #117864;
         }
@@ -314,8 +319,9 @@
         <div class="filtres-admin">
             <button class="filtre-btn active" onclick="filtrer('Toutes', this)">Toutes</button>
             <button class="filtre-btn" onclick="filtrer('En attente', this)">En attente</button>
-            <button class="filtre-btn" onclick="filtrer('Payé non livré', this)">Payé non livré</button>
-            <button class="filtre-btn" onclick="filtrer('Payé livré', this)">Payé livré</button>
+            <button class="filtre-btn" onclick="filtrer('Confirmée', this)">Confirmée</button>
+            <button class="filtre-btn" onclick="filtrer('En livraison', this)">En livraison</button>
+            <button class="filtre-btn" onclick="filtrer('Livrée', this)">Livrée</button>
             <button class="filtre-btn" onclick="filtrer('Annulée', this)">Annulées</button>
         </div>
 
@@ -354,8 +360,9 @@
             <div style="margin:12px 0 5px; font-weight:bold; color:#0C447C; font-size:13px;">Changer le statut :</div>
             <select class="select-statut" id="modal-statut">
                 <option value="En attente">En attente</option>
-                <option value="Payé non livré">Payé non livré</option>
-                <option value="Payé livré">Payé livré</option>
+                <option value="Confirmée">Confirmée</option>
+                <option value="En livraison">En livraison</option>
+                <option value="Livrée">Livrée</option>
                 <option value="Annulée">Annulée</option>
             </select>
             <textarea class="textarea-notes" id="modal-notes" placeholder="Notes internes (optionnel)..."></textarea>
@@ -368,7 +375,7 @@
     <div id="zone-impression" style="display:none;"></div>
 
     <script>
-        const API = "https://nslookup-cluster1-bydepfo-mongodb-net-1.onrender.com"; // ← REMPLACER par l'URL Render réelle après déploiement
+        const API = "https://hygia-backend.onrender.com";
         let adminToken = localStorage.getItem("adminToken") || "";
         let commandes = [];
         let numeroCourant = "";
@@ -437,8 +444,9 @@
 
             const classesStatut = {
                 "En attente": "attente",
-                "Payé non livré": "paye-non-livre",
-                "Payé livré": "paye-livre",
+                "Confirmée": "confirmee",
+                "En livraison": "en-livraison",
+                "Livrée": "livree",
                 "Annulée": "annulee"
             };
 

@@ -2507,6 +2507,7 @@ async function afficherPageCompte() {
                 <div class="commande-card-footer">
                     <span class="commande-mode-paiement">${iconeMode(commande.modePaiement)} ${escapeHtml(commande.modePaiement || "—")}</span>
                     <span class="commande-total-amount">${(commande.total || 0).toLocaleString()} FCFA</span>
+                    <button class="btn-form-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.location.href='commande-detail.html?numero=${escapeHtml(commande.numero)}'">Voir le détail</button>
                 </div>`;
 
             historiqueContainer.appendChild(div);
@@ -2908,6 +2909,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (btnPaiement) {
         const livraisonForm = document.getElementById("livraison-form");
+        const paiementSection = document.getElementById("paiement-section");
 
         btnPaiement.addEventListener("click", () => {
             const panier = getPanier();
@@ -2916,23 +2918,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Étape 1 : afficher le formulaire et changer le bouton en "Payer"
+            // Étape 1 : afficher le formulaire de livraison
             if (livraisonForm && livraisonForm.style.display === "none") {
                 livraisonForm.style.display = "block";
                 livraisonForm.scrollIntoView({ behavior: "smooth" });
-                btnPaiement.textContent = tr("Payer", "Pay");
-                btnPaiement.dataset.etape = "payer";
+                btnPaiement.textContent = tr("Continuer", "Continue");
+                btnPaiement.dataset.etape = "livraison";
                 return;
             }
 
-            // Étape 2 : valider le formulaire et rediriger directement vers Moneroo
-            if (!validerFormulaireLivraison()) {
-                livraisonForm.scrollIntoView({ behavior: "smooth" });
-                return;
+            // Étape 2 : valider le formulaire et afficher les options de paiement
+            if (btnPaiement.dataset.etape === "livraison") {
+                if (!validerFormulaireLivraison()) {
+                    livraisonForm.scrollIntoView({ behavior: "smooth" });
+                    return;
+                }
+
+                // Afficher les options de paiement
+                if (paiementSection) {
+                    paiementSection.style.display = "block";
+                    paiementSection.scrollIntoView({ behavior: "smooth" });
+                    btnPaiement.textContent = tr("Confirmer la commande", "Confirm order");
+                    btnPaiement.dataset.etape = "paiement";
+                    return;
+                }
             }
 
-            // Rediriger directement vers Moneroo avec Orange Money par défaut
-            confirmerCommande("orange");
+            // Étape 3 : confirmer la commande avec le mode de paiement choisi
+            if (btnPaiement.dataset.etape === "paiement") {
+                const methodePaiement = document.querySelector('input[name="paiement"]:checked');
+                if (!methodePaiement) {
+                    afficherToast("Veuillez choisir un mode de paiement.", "error");
+                    return;
+                }
+
+                confirmerCommande(methodePaiement.value);
+            }
         });
     }
 
