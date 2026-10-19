@@ -1610,10 +1610,25 @@ function validerFormulaireLivraison() {
     return valide;
 }
 
+let commandeEnCours = false;
+
 async function confirmerCommande(methode) {
+    // Empêcher les doubles clics
+    if (commandeEnCours) {
+        console.log("DEBUG: commande déjà en cours, ignorée");
+        return;
+    }
+    commandeEnCours = true;
+
     console.log("DEBUG: confirmerCommande appelée avec methode =", methode);
     const panier = getPanier();
-    if (panier.length === 0) return;
+    if (panier.length === 0) {
+        commandeEnCours = false;
+        return;
+    }
+
+    // Générer une clé d'idempotence unique pour cette commande
+    const idempotencyKey = 'cmd-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
     const nomClient = document.getElementById("livraison-nom")
         ?.value?.trim() || "";
@@ -1667,7 +1682,10 @@ async function confirmerCommande(methode) {
 
         const res = await fetch(`${BACKEND_URL}/api/commandes`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Idempotency-Key": idempotencyKey
+            },
             body: JSON.stringify(payload)
         });
         data = await res.json();
@@ -1685,6 +1703,7 @@ async function confirmerCommande(methode) {
     } catch (err) {
         console.warn("Impossible de créer la commande:", err);
         hideSyphaLoader();
+        commandeEnCours = false;
         alert("Impossible d'enregistrer la commande. Veuillez réessayer.");
         if (btnPaiement) {
             btnPaiement.textContent = tr("Payer", "Pay");
@@ -1712,7 +1731,10 @@ async function confirmerCommande(methode) {
         console.log("DEBUG: Appel Moneroo avec commande_id =", numeroCommande, "montant =", totalCommande);
         const res = await fetch(`${BACKEND_URL}/api/paiement/initier`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Idempotency-Key": idempotencyKey
+            },
             body: JSON.stringify({
                 commande_id: numeroCommande,
                 montant: totalCommande,
@@ -1749,6 +1771,7 @@ async function confirmerCommande(methode) {
 
     } catch (err) {
         hideSyphaLoader();
+        commandeEnCours = false;
         console.error("Erreur Moneroo:", err);
         // Même comportement en cas d'erreur réseau
         enregistrerCommande(panier, methode, totalCommande);

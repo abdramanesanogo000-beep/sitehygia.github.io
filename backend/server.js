@@ -31,6 +31,46 @@ const { globalLimiter, authLimiter } = require('./middleware/rateLimit');
 const app = express();
 app.set('trust proxy', 1); // Nécessaire derrière le proxy Render pour express-rate-limit
 
+// Helper fetch avec timeout pour éviter les appels bloquants
+function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(timeout));
+}
+
+// Validation des URLs de redirection pour éviter les redirections ouvertes
+function isValidReturnUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const allowedPrefix = process.env.FRONTEND_URL || 'https://abdramanesanogo000-beep.github.io/sitehygia.github.io';
+    return url === allowedPrefix || url.startsWith(allowedPrefix + '/');
+}
+
+// Gestion des idempotency keys pour éviter les doubles soumissions
+const idempotencyKeys = new Map();
+const IDEMPOTENCY_WINDOW_MS = 60 * 1000; // 1 minute
+
+function cleanExpiredIdempotencyKeys() {
+    const now = Date.now();
+    for (const [key, timestamp] of idempotencyKeys.entries()) {
+        if (now - timestamp > IDEMPOTENCY_WINDOW_MS) {
+            idempotencyKeys.delete(key);
+        }
+    }
+}
+
+function checkIdempotencyKey(req, res, next) {
+    const key = req.headers['idempotency-key'];
+    if (key) {
+        cleanExpiredIdempotencyKeys();
+        if (idempotencyKeys.has(key)) {
+            return res.status(409).json({ succes: false, erreur: 'Requête déjà traitée. Veuillez patienter.' });
+        }
+        idempotencyKeys.set(key, Date.now());
+    }
+    next();
+}
+
 // Nettoyage global des entrées : protection NoSQL + XSS basique
 function sanitizeInput(req, res, next) {
     function clean(value) {
@@ -78,10 +118,42 @@ app.use(cors({
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(helmet({
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "https://hygia-backend.onrender.com"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameAncestors: ["'none'"],
+            upgradeInsecureRequests: []
+        }
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    }
+}));
 app.use(express.json());
 app.use(sanitizeInput);
 app.use(globalLimiter);
+
+// En cas de panne de MongoDB, bloquer les requêtes sensibles
+function requireDatabase(req, res, next) {
+    if (mongoose.connection.readyState !== 1) {
+        return res.status(503).json({ succes: false, erreur: 'Service temporairement indisponible. Veuillez réessayer plus tard.' });
+    }
+    next();
+}
+app.use('/api/commandes', requireDatabase);
+app.use('/api/paiement', requireDatabase);
+app.use('/api/auth', requireDatabase);
+app.use('/api/admin', requireDatabase);
 
 // Middleware de log simple
 app.use((req, res, next) => {
@@ -246,7 +318,7 @@ app.post('/api/auth/inscription', authLimiter, async (req, res) => {
         const emailNormalise = email.toLowerCase();
         const existe = await Utilisateur.findOne({ email: emailNormalise });
         if (existe) {
-            return res.status(400).json({ succes: false, erreur: 'Un compte existe déjà avec cet email.' });
+            return res.status(400).json({ succes: false, erreur: 'Impossible de créer le compte. Vérifiez vos informations.' });
         }
 
         // Génère un code parrainage unique
@@ -559,7 +631,7 @@ app.post('/api/verifier-code-promo', async (req, res) => {
 });
 
 // Créer une commande (recalcul côté serveur, vérification stock)
-app.post('/api/commandes', async (req, res) => {
+app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
     try {
         const { articles } = req.body;
         const client = {
@@ -1106,7 +1178,7 @@ const MONEROO_API_URL = 'https://api.moneroo.io/v1/payments/initialize';
 const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
 
 // Initier un paiement Moneroo (Orange Money, Moov Money, Mobi Cash au Mali)
-app.post('/api/paiement/initier', async (req, res) => {
+app.post('/api/paiement/initier', checkIdempotencyKey, async (req, res) => {
     try {
         const { commande_id, montant, client, methode } = req.body;
 
@@ -1135,11 +1207,16 @@ app.post('/api/paiement/initier', async (req, res) => {
             methods = ['orange_ml', 'moov_ml', 'mobi_cash_ml'];
         }
 
+        const returnUrl = `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`;
+        if (!isValidReturnUrl(returnUrl)) {
+            return res.status(400).json({ succes: false, erreur: 'URL de retour invalide.' });
+        }
+
         const payload = {
             amount: Math.round(montant),
             currency: 'XOF',
             description: `Commande Hygia ${commande_id}`,
-            return_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`,
+            return_url: returnUrl,
             customer: {
                 email: client.email || '',
                 first_name: client.nom || 'Client',
@@ -1157,7 +1234,7 @@ app.post('/api/paiement/initier', async (req, res) => {
 
         console.log('Moneroo Initialize Request:', payload);
 
-        const response = await fetch(MONEROO_API_URL, {
+        const response = await fetchWithTimeout(MONEROO_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1165,7 +1242,7 @@ app.post('/api/paiement/initier', async (req, res) => {
                 'Accept': 'application/json'
             },
             body: JSON.stringify(payload)
-        });
+        }, 15000); // Timeout 15s pour Moneroo
 
         const data = await response.json();
         console.log('Moneroo Initialize Response:', data);
@@ -1203,7 +1280,7 @@ app.post('/api/paiement/moneroo-webhook', async (req, res) => {
     try {
         const { data } = req.body;
 
-        console.log('Moneroo Webhook reçu:', req.body);
+        console.log('Moneroo Webhook reçu:', { event: req.body?.event, transaction_id: req.body?.data?.id, status: req.body?.data?.status });
 
         if (!data || !data.id) {
             return res.status(200).json({ status: 'ok' });
@@ -1218,6 +1295,12 @@ app.post('/api/paiement/moneroo-webhook', async (req, res) => {
         }
 
         if (data.status === 'success') {
+            // Empêcher le replay d'un paiement déjà confirmé
+            if (commande.statut === 'Confirmée' || commande.statut === 'En livraison' || commande.statut === 'Livrée') {
+                console.log('⚠️ Webhook Moneroo ignoré : commande déjà traitée ' + commande.numero);
+                return res.status(200).json({ status: 'ok' });
+            }
+
             const commandeConfirmee = await Commande.findOneAndUpdate(
                 { moneroo_transaction_id: data.id },
                 { $set: { statut: 'Confirmée', paiement_confirme: true } },
@@ -1269,6 +1352,11 @@ app.post('/api/paiement/initier', async (req, res) => {
         }
 
         // Payload selon documentation PayTech
+        const returnUrl = `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`;
+        if (!isValidReturnUrl(returnUrl)) {
+            return res.status(400).json({ succes: false, erreur: 'URL de retour invalide.' });
+        }
+
         const payload = {
             item_name: `Commande Hygia ${commande_id}`,
             item_price: Math.round(montant),
@@ -1276,6 +1364,7 @@ app.post('/api/paiement/initier', async (req, res) => {
             ref_command: commande_id,
             command_name: `Commande Hygia ${commande_id}`,
             env: PAYTECH_ENV,
+            return_url: returnUrl,
             customer_surname: client.nom || 'Client',
             customer_name: client.prenom || 'Hygia',
             customer_email: client.email || '',
@@ -1290,7 +1379,7 @@ app.post('/api/paiement/initier', async (req, res) => {
 
         console.log('PayTech Initialize Request:', payload);
 
-        const response = await fetch(PAYTECH_API_URL, {
+        const response = await fetchWithTimeout(PAYTECH_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1298,7 +1387,7 @@ app.post('/api/paiement/initier', async (req, res) => {
                 'API_SECRET': PAYTECH_API_SECRET
             },
             body: JSON.stringify(payload)
-        });
+        }, 15000);
 
         const data = await response.json();
         console.log('PayTech Initialize Response:', data);
@@ -1336,7 +1425,7 @@ app.post('/api/paiement/paytech-ipn', async (req, res) => {
     try {
         const body = req.body;
 
-        console.log('PayTech IPN reçu:', body);
+        console.log('PayTech IPN reçu:', { type_event: body?.type_event, ref_command: body?.ref_command, token: body?.token });
 
         if (!body || !body.type_event) {
             return res.status(200).json({ status: 'ok' });
@@ -1433,12 +1522,17 @@ app.post('/api/paiement/initier', async (req, res) => {
         const timestamp = Math.floor(Date.now() / 1000);
 
         // Préparer le payload selon la documentation officielle Jɛmɛnipay
+        const returnUrl = `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`;
+        if (!isValidReturnUrl(returnUrl)) {
+            return res.status(400).json({ succes: false, erreur: 'URL de retour invalide.' });
+        }
+
         const payload = {
             customer_phone: client.telephone.replace('+223', ''), // Sans code pays pour Mali
             amount: Math.round(montant),
             country_code: 'ml', // Mali
             notifiable: true, // Envoyer notification au client
-            return_url: `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`,
+            return_url: returnUrl,
             code_merchant: commande_id, // Référence interne
             source: 'web', // Origine du paiement
             reference: commande_id, // Référence externe
@@ -1467,7 +1561,7 @@ app.post('/api/paiement/initier', async (req, res) => {
             signature: signature.substring(0, 20) + '...' // Afficher seulement les premiers caractères
         });
 
-        const response = await fetch(fullUrl, {
+        const response = await fetchWithTimeout(fullUrl, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -1479,7 +1573,7 @@ app.post('/api/paiement/initier', async (req, res) => {
                 ...(isSandbox && { 'sandbox': 'true' })
             },
             body: JSON.stringify(payload)
-        });
+        }, 15000);
 
         console.log('Jɛmɛnipay API Response Status:', response.status);
         console.log('Jɛmɛnipay API Response Headers:', Object.fromEntries(response.headers.entries()));
@@ -1520,7 +1614,7 @@ app.post('/api/paiement/jemeni-webhook', async (req, res) => {
     try {
         const { event, data } = req.body;
 
-        console.log('Jɛmɛnipay Webhook reçu:', req.body);
+        console.log('Jɛmɛnipay Webhook reçu:', { event: req.body?.event, session_id: req.body?.data?.session_id, status: req.body?.data?.status });
 
         if (!event || !data) {
             return res.status(200).json({ status: 'ok' });
@@ -1746,8 +1840,12 @@ app.use((req, res) => {
     res.status(404).json({ erreur: 'Route non trouvée.' });
 });
 
-// Connexion MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+// Connexion MongoDB avec timeouts
+mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 10000,
+    socketTimeoutMS: 30000,
+    connectTimeoutMS: 10000
+})
     .then(async () => {
         console.log('✅ Connecté à MongoDB');
         await seedProduits();
