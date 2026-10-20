@@ -4,100 +4,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
     <link rel="stylesheet" href="yames.css">
     <script src="yames.js" defer></script>
-    <title>Commande confirmée — Hygia</title>
+    <title>Confirmation de commande — Hygia</title>
     <style>
-        .confirmation-page {
-            text-align: center;
-            max-width: 520px;
-            margin: 0 auto;
-            padding: 60px 20px;
+        .conf-page {
+            background: #f0f4f8;
+            min-height: 75vh;
+            padding: 48px 20px 64px;
         }
 
-        .conf-icon {
-            width: 80px;
-            height: 80px;
+        .conf-card {
+            max-width: 620px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(12, 68, 124, 0.08);
+            overflow: hidden;
+        }
+
+        .conf-top {
+            padding: 40px 32px 28px;
+            text-align: center;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .conf-badge {
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
             margin: 0 auto 20px;
         }
 
-        .conf-icon.succes { background-color: #d5f5e3; }
-        .conf-icon.echec { background-color: #fadbd8; }
-        .conf-icon.annule { background-color: #fdebd0; }
+        .conf-badge svg { width: 36px; height: 36px; }
+        .conf-badge.succes { background: #e8f7ee; color: #1e8a4c; }
+        .conf-badge.attente { background: #fff6e0; color: #b7791f; }
+        .conf-badge.echec { background: #fdecea; color: #c0392b; }
+        .conf-badge.annule { background: #f1f3f6; color: #5f6b7a; }
 
-        .conf-numero {
-            background-color: #E6F1FB;
+        .conf-badge.succes svg {
+            stroke-dasharray: 30;
+            stroke-dashoffset: 30;
+            animation: conf-trace 0.6s 0.15s ease-out forwards;
+        }
+
+        @keyframes conf-trace { to { stroke-dashoffset: 0; } }
+
+        .conf-top h1 {
+            font-size: 24px;
+            color: #1a2d42;
+            margin: 0 0 8px;
+        }
+
+        .conf-top p {
+            font-size: 15px;
+            color: #6b7a8c;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .conf-ref {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            background: #f4f9ff;
+            border: 1px solid #d7e6f9;
             border-radius: 8px;
-            padding: 14px 20px;
-            font-size: 18px;
+            padding: 10px 18px;
+            font-size: 14px;
+            color: #6b7a8c;
+        }
+
+        .conf-ref strong {
+            font-size: 16px;
+            color: #0C447C;
+            letter-spacing: 0.5px;
+        }
+
+        .conf-body { padding: 28px 32px; }
+
+        .conf-section-titre {
+            font-size: 12px;
             font-weight: 700;
-            color: #185FA5;
-            margin: 20px 0;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #8a97a8;
+            margin: 0 0 12px;
         }
 
         .conf-recap {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: left;
-            margin: 20px 0;
+            border: 1px solid #eef2f7;
+            border-radius: 10px;
+            margin-bottom: 28px;
         }
 
-        .conf-recap-ligne {
+        .conf-ligne {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+            gap: 16px;
+            padding: 13px 16px;
             font-size: 14px;
-            color: #444;
+            border-bottom: 1px solid #eef2f7;
         }
 
-        .conf-recap-ligne:last-child { border-bottom: none; }
-        .conf-recap-ligne strong { color: #0C447C; }
+        .conf-ligne:last-child { border-bottom: none; }
+        .conf-ligne span { color: #6b7a8c; }
+        .conf-ligne strong { color: #1a2d42; text-align: right; }
 
-        .conf-message {
-            border-radius: 8px;
-            padding: 14px;
+        .conf-ligne.total {
+            background: #f8fbff;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .conf-ligne.total strong { font-size: 18px; color: #0C447C; }
+
+        .conf-pill {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .conf-pill.paye { background: #e8f7ee; color: #1e8a4c; }
+        .conf-pill.livraison { background: #e8f1fb; color: #185FA5; }
+        .conf-pill.attente { background: #fff6e0; color: #b7791f; }
+
+        .conf-etapes {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 28px;
+        }
+
+        .conf-etapes li {
+            display: flex;
+            gap: 14px;
+            position: relative;
+            padding-bottom: 18px;
+        }
+
+        .conf-etapes li:last-child { padding-bottom: 0; }
+
+        .conf-etapes li:not(:last-child)::before {
+            content: "";
+            position: absolute;
+            left: 13px;
+            top: 28px;
+            bottom: 0;
+            width: 2px;
+            background: #e1e8f2;
+        }
+
+        .conf-etape-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #eef2f7;
+            color: #6b7a8c;
             font-size: 13px;
-            line-height: 1.6;
-            margin-top: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .conf-message.succes { background-color: #eafaf1; color: #1e7e45; }
-        .conf-message.echec { background-color: #fdecea; color: #a93226; }
-        .conf-message.annule { background-color: #fff3cd; color: #8a6d3b; }
+        .conf-etapes li.fait .conf-etape-num { background: #185FA5; color: #fff; }
+        .conf-etape-texte strong { display: block; font-size: 14px; color: #1a2d42; margin-bottom: 2px; }
+        .conf-etape-texte span { font-size: 13px; color: #7a8899; }
+
+        .conf-note {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: #f4f9ff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #3d5268;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .conf-note svg { flex-shrink: 0; margin-top: 2px; color: #185FA5; }
+        .conf-note.echec { background: #fdf3f2; color: #8c2f24; }
+        .conf-note.echec svg { color: #c0392b; }
 
         .conf-actions {
             display: flex;
-            justify-content: center;
             gap: 12px;
             flex-wrap: wrap;
-            margin-top: 25px;
         }
 
-        .spinner-paiement {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #E6F1FB;
-            border-top: 4px solid #185FA5;
+        .conf-btn {
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            padding: 13px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+        }
+
+        .conf-btn:hover { transform: translateY(-1px); }
+        .conf-btn.primaire { background: #185FA5; color: #fff; border: 1.5px solid #185FA5; }
+        .conf-btn.primaire:hover { background: #0C447C; border-color: #0C447C; }
+        .conf-btn.secondaire { background: #fff; color: #185FA5; border: 1.5px solid #c9dbef; }
+        .conf-btn.secondaire:hover { border-color: #185FA5; }
+
+        .conf-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e8f1fb;
+            border-top-color: #185FA5;
             border-radius: 50%;
             margin: 0 auto 20px;
-            animation: spin-pay 0.9s linear infinite;
+            animation: conf-spin 0.9s linear infinite;
         }
 
-        @keyframes spin-pay {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes conf-spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 480px) {
-            .conf-actions { flex-direction: column; }
+        .conf-etat { display: none; }
+        .conf-etat.visible { display: block; }
+
+        @media (max-width: 520px) {
+            .conf-page { padding: 24px 12px 48px; }
+            .conf-top { padding: 32px 20px 24px; }
+            .conf-body { padding: 22px 20px; }
+            .conf-top h1 { font-size: 21px; }
+            .conf-btn { min-width: 100%; }
         }
     </style>
 </head>
@@ -124,7 +267,7 @@
             <form action="/recherche" method="GET">
                 <label for="search-input">Rechercher</label>
                 <input type="search" id="search-input" name="q" placeholder="Rechercher sur le site...">
-                <button type="submit">🔍</button>
+                <button type="submit" aria-label="Rechercher"></button>
             </form>
 
             <a href="connexion.html" class="nav-compte-link">Connexion</a>
@@ -132,78 +275,127 @@
         </div>
     </nav>
 
-    <main>
-        <section class="confirmation-page" id="confirmation-container">
+    <main class="conf-page">
+        <div class="conf-card">
 
-            <!-- ÉTAT : VÉRIFICATION EN COURS -->
-            <div id="etat-verification">
-                <div class="spinner-paiement"></div>
-                <h1>Vérification en cours...</h1>
-                <p>Votre paiement est en cours de vérification. Cette page se rafraîchira automatiquement.</p>
+            <!-- ÉTAT : VÉRIFICATION -->
+            <div id="etat-verification" class="conf-etat visible">
+                <div class="conf-top">
+                    <div class="conf-spinner"></div>
+                    <h1>Vérification de votre commande</h1>
+                    <p>Merci de patienter quelques secondes, nous confirmons votre paiement.</p>
+                </div>
             </div>
 
-            <!-- ÉTAT : SUCCÈS -->
-            <div id="etat-succes" style="display:none;">
-                <div class="conf-icon succes">✅</div>
-                <h1>Commande confirmée !</h1>
-                <p>Merci pour votre confiance.</p>
-
-                <div class="conf-numero">
-                    N° <span id="conf-numero">—</span>
+            <!-- ÉTAT : SUCCÈS (paiement en ligne ou à la livraison) -->
+            <div id="etat-succes" class="conf-etat">
+                <div class="conf-top">
+                    <div class="conf-badge succes">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h1>Merci, votre commande est confirmée</h1>
+                    <p id="ok-sous-titre">Nous préparons votre colis.</p>
+                    <div class="conf-ref">Commande <strong id="ok-numero">—</strong></div>
                 </div>
 
-                <div class="conf-recap">
-                    <div class="conf-recap-ligne"><span>Client</span> <strong id="conf-nom">—</strong></div>
-                    <div class="conf-recap-ligne"><span>Mode de paiement</span> <strong id="conf-methode">—</strong></div>
-                    <div class="conf-recap-ligne"><span>Statut du paiement</span> <strong id="conf-statut-paiement">—</strong></div>
-                    <div class="conf-recap-ligne"><span>Montant total</span> <strong id="conf-total">—</strong></div>
-                </div>
+                <div class="conf-body">
+                    <p class="conf-section-titre">Récapitulatif</p>
+                    <div class="conf-recap">
+                        <div class="conf-ligne"><span>Client</span><strong id="ok-nom">—</strong></div>
+                        <div class="conf-ligne"><span>Mode de paiement</span><strong id="ok-methode">—</strong></div>
+                        <div class="conf-ligne"><span>Paiement</span><strong><span id="ok-statut" class="conf-pill paye">Payé</span></strong></div>
+                        <div class="conf-ligne total"><span>Montant total</span><strong id="ok-total">—</strong></div>
+                    </div>
 
-                <div class="conf-message succes">
-                    Votre commande a été enregistrée. Nous vous contacterons pour organiser
-                    la livraison sous 24 à 48h à Bamako.
-                </div>
+                    <p class="conf-section-titre">Prochaines étapes</p>
+                    <ol class="conf-etapes">
+                        <li class="fait">
+                            <span class="conf-etape-num">1</span>
+                            <div class="conf-etape-texte"><strong>Commande confirmée</strong><span>Votre commande est enregistrée.</span></div>
+                        </li>
+                        <li>
+                            <span class="conf-etape-num">2</span>
+                            <div class="conf-etape-texte"><strong>Prise de contact</strong><span>Notre équipe vous appelle pour organiser la livraison.</span></div>
+                        </li>
+                        <li>
+                            <span class="conf-etape-num">3</span>
+                            <div class="conf-etape-texte"><strong>Livraison à Bamako</strong><span id="ok-etape-livraison">Sous 24 à 48h à l'adresse indiquée.</span></div>
+                        </li>
+                    </ol>
 
-                <div class="conf-actions">
-                    <a href="compte.html" class="btn-paiement">Voir mes commandes</a>
-                    <a href="catalogue.html" class="btn-continue">Continuer mes achats</a>
+                    <div class="conf-note">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Vous pouvez suivre l'avancement de votre commande à tout moment depuis votre compte, rubrique « Mes commandes ».</span>
+                    </div>
+
+                    <div class="conf-actions">
+                        <a href="compte.html" id="ok-suivi" class="conf-btn primaire">Suivre ma commande</a>
+                        <a href="catalogue.html" class="conf-btn secondaire">Continuer mes achats</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAT : PAIEMENT EN ATTENTE -->
+            <div id="etat-attente" class="conf-etat">
+                <div class="conf-top">
+                    <div class="conf-badge attente">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h1>Paiement en cours de confirmation</h1>
+                    <p>Votre commande est enregistrée. La confirmation du paiement peut prendre quelques minutes.</p>
+                    <div class="conf-ref">Commande <strong id="attente-numero">—</strong></div>
+                </div>
+                <div class="conf-body">
+                    <div class="conf-note">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Si vous avez validé le paiement sur votre téléphone, il sera confirmé automatiquement. Le statut est visible dans votre compte.</span>
+                    </div>
+                    <div class="conf-actions">
+                        <a href="#" id="btn-reverifier" class="conf-btn primaire">Vérifier à nouveau</a>
+                        <a href="compte.html" class="conf-btn secondaire">Voir mes commandes</a>
+                    </div>
                 </div>
             </div>
 
             <!-- ÉTAT : ÉCHEC -->
-            <div id="etat-echec" style="display:none;">
-                <div class="conf-icon echec">❌</div>
-                <h1>Paiement non complété</h1>
-                <p>Votre paiement n'a pas pu être traité. Vous n'avez pas été débité.</p>
-
-                <div class="conf-message echec">
-                    Veuillez réessayer votre paiement depuis votre panier. Si le problème
-                    persiste, contactez-nous et nous vous aiderons à finaliser votre commande.
+            <div id="etat-echec" class="conf-etat">
+                <div class="conf-top">
+                    <div class="conf-badge echec">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </div>
+                    <h1>Le paiement n'a pas abouti</h1>
+                    <p>Aucun montant n'a été débité de votre compte.</p>
                 </div>
-
-                <div class="conf-actions">
-                    <a href="panier.html" class="btn-paiement">Réessayer</a>
-                    <a href="contact.html" class="btn-continue">Nous contacter</a>
+                <div class="conf-body">
+                    <div class="conf-note echec">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>Vous pouvez réessayer depuis votre panier ou choisir le paiement à la livraison. Si le problème persiste, contactez-nous.</span>
+                    </div>
+                    <div class="conf-actions">
+                        <a href="panier.html" class="conf-btn primaire">Réessayer</a>
+                        <a href="contact.html" class="conf-btn secondaire">Nous contacter</a>
+                    </div>
                 </div>
             </div>
 
             <!-- ÉTAT : ANNULÉ -->
-            <div id="etat-annule" style="display:none;">
-                <div class="conf-icon annule">↩️</div>
-                <h1>Paiement annulé</h1>
-                <p>Vous avez annulé le paiement. Votre panier est toujours disponible.</p>
-
-                <div class="conf-message annule">
-                    Vous pouvez réessayer quand vous le souhaitez ou continuer vos achats.
+            <div id="etat-annule" class="conf-etat">
+                <div class="conf-top">
+                    <div class="conf-badge annule">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                    </div>
+                    <h1>Commande annulée</h1>
+                    <p>Cette commande a été annulée. Vous pouvez passer une nouvelle commande à tout moment.</p>
                 </div>
-
-                <div class="conf-actions">
-                    <a href="panier.html" class="btn-paiement">Retour au panier</a>
-                    <a href="catalogue.html" class="btn-continue">Continuer mes achats</a>
+                <div class="conf-body">
+                    <div class="conf-actions">
+                        <a href="panier.html" class="conf-btn primaire">Retour au panier</a>
+                        <a href="catalogue.html" class="conf-btn secondaire">Continuer mes achats</a>
+                    </div>
                 </div>
             </div>
 
-        </section>
+        </div>
     </main>
 
     <footer>
@@ -222,47 +414,89 @@
     </footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", async () => {
+        document.addEventListener("DOMContentLoaded", () => {
             const params = new URLSearchParams(window.location.search);
-            const ref = params.get("ref");
-            const annule = params.get("annule");
+            const ref = params.get("ref") || params.get("numero");
+            const MAX_TENTATIVES = 8;
+            const INTERVALLE_MS = 4000;
 
-            const etatVerification = document.getElementById("etat-verification");
-            const etatSucces = document.getElementById("etat-succes");
-            const etatEchec = document.getElementById("etat-echec");
-            const etatAnnule = document.getElementById("etat-annule");
-
-            function afficherSucces({ numero, nom, methode, total }) {
-                etatVerification.style.display = "none";
-                etatEchec.style.display = "none";
-                etatAnnule.style.display = "none";
-                etatSucces.style.display = "block";
-
-                document.getElementById("conf-numero").textContent = numero || "—";
-                document.getElementById("conf-nom").textContent = nom || "—";
-                document.getElementById("conf-methode").textContent = methode || "—";
-                document.getElementById("conf-statut-paiement").textContent = "✅ Payé";
-                document.getElementById("conf-total").textContent = total
-                    ? Number(total).toLocaleString() + " FCFA"
-                    : "—";
+            function afficherEtat(id) {
+                document.querySelectorAll(".conf-etat").forEach(el => el.classList.toggle("visible", el.id === id));
             }
 
-            function afficherEchec() {
-                etatVerification.style.display = "none";
-                etatSucces.style.display = "none";
-                etatAnnule.style.display = "none";
-                etatEchec.style.display = "block";
+            function texte(id, valeur) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = valeur;
             }
 
-            function afficherAnnule() {
-                etatVerification.style.display = "none";
-                etatSucces.style.display = "none";
-                etatEchec.style.display = "none";
-                etatAnnule.style.display = "block";
+            function afficherSucces(data) {
+                const estLivraison = String(data.modePaiement || "").toLowerCase().includes("livraison");
+                const statut = document.getElementById("ok-statut");
+
+                texte("ok-numero", data.numero || ref);
+                texte("ok-nom", data.nom || "—");
+                texte("ok-methode", data.modePaiement || "—");
+                texte("ok-total", data.total ? Number(data.total).toLocaleString("fr-FR") + " FCFA" : "—");
+
+                if (estLivraison) {
+                    statut.textContent = "À régler à la livraison";
+                    statut.className = "conf-pill livraison";
+                    texte("ok-sous-titre", "Vous réglerez le montant à la réception de votre colis.");
+                    texte("ok-etape-livraison", "Sous 24 à 48h. Préparez le montant exact pour le livreur.");
+                } else {
+                    statut.textContent = "Payé";
+                    statut.className = "conf-pill paye";
+                    texte("ok-sous-titre", "Votre paiement a bien été reçu. Nous préparons votre colis.");
+                }
+
+                document.getElementById("ok-suivi").href = "commande-detail.html?numero=" + encodeURIComponent(data.numero || ref);
+                afficherEtat("etat-succes");
             }
 
-            if (annule === "1") {
-                afficherAnnule();
+            async function verifier(tentative) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/paiement/statut?ref=${encodeURIComponent(ref)}`);
+                    const data = await response.json();
+
+                    if (response.status === 404 || data?.statut === "Paiement échoué") {
+                        afficherEtat("etat-echec");
+                        return;
+                    }
+
+                    if (data?.statut === "Annulée") {
+                        afficherEtat("etat-annule");
+                        return;
+                    }
+
+                    if (data?.statut === "En attente paiement") {
+                        if (tentative < MAX_TENTATIVES) {
+                            setTimeout(() => verifier(tentative + 1), INTERVALLE_MS);
+                        } else {
+                            texte("attente-numero", data.numero || ref);
+                            afficherEtat("etat-attente");
+                        }
+                        return;
+                    }
+
+                    if (data?.statut) {
+                        afficherSucces(data);
+                        return;
+                    }
+
+                    afficherEtat("etat-echec");
+                } catch (error) {
+                    console.error("Erreur de vérification de la commande :", error);
+                    if (tentative < MAX_TENTATIVES) {
+                        setTimeout(() => verifier(tentative + 1), INTERVALLE_MS);
+                    } else {
+                        texte("attente-numero", ref);
+                        afficherEtat("etat-attente");
+                    }
+                }
+            }
+
+            if (params.get("annule") === "1") {
+                afficherEtat("etat-annule");
                 return;
             }
 
@@ -271,35 +505,13 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/paiement/statut?ref=${encodeURIComponent(ref)}`);
-                const data = await response.json();
+            document.getElementById("btn-reverifier").addEventListener("click", (e) => {
+                e.preventDefault();
+                afficherEtat("etat-verification");
+                verifier(MAX_TENTATIVES - 2);
+            });
 
-                if (response.status === 404 || data?.statut === "Paiement échoué") {
-                    afficherEchec();
-                    return;
-                }
-
-                if (data?.statut === "Confirmée") {
-                    afficherSucces({
-                        numero: data.numero,
-                        nom: data.nom,
-                        methode: data.modePaiement,
-                        total: data.total
-                    });
-                    return;
-                }
-
-                if (data?.statut === "En attente paiement") {
-                    setTimeout(() => window.location.reload(), 5000);
-                    return;
-                }
-
-                afficherEchec();
-            } catch (error) {
-                console.error("Erreur de vérification du paiement :", error);
-                afficherEchec();
-            }
+            verifier(1);
         });
     </script>
 

@@ -62,13 +62,13 @@
                     <span class="field-error" id="error-nom"></span>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="livraison-tel">Téléphone</label>
-                    <input class="form-input" type="tel" id="livraison-tel" placeholder="+223 ...">
+                    <label class="form-label" for="livraison-tel">Téléphone <span style="color:#c0392b">*</span></label>
+                    <input class="form-input" type="tel" id="livraison-tel" placeholder="+223 7X XX XX XX" required autocomplete="tel">
                     <span class="field-error" id="error-tel"></span>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="livraison-email">Email <span style="color:#c0392b">*</span></label>
-                    <input class="form-input" type="email" id="livraison-email" placeholder="Votre adresse email">
+                    <label class="form-label" for="livraison-email">Email <span style="color:#888;font-weight:400">(facultatif)</span></label>
+                    <input class="form-input" type="email" id="livraison-email" placeholder="Pour recevoir votre reçu par email" autocomplete="email">
                     <span class="field-error" id="error-email"></span>
                 </div>
                 <div class="form-group">
@@ -132,37 +132,71 @@
 
             <!-- CHOIX DU MODE DE PAIEMENT -->
             <div class="paiement-section" id="paiement-section" style="display:none;">
-                <h2>Mode de paiement</h2>
+                <div class="paiement-header">
+                    <h2>Mode de paiement</h2>
+                    <p>Choisissez comment vous souhaitez régler votre commande.</p>
+                </div>
+
+                <div class="paiement-groupe-titre">Paiement en ligne</div>
                 <div class="paiement-options">
                     <label class="paiement-option">
                         <input type="radio" name="paiement" value="orange" checked>
                         <span class="paiement-option-content">
-                            <span class="paiement-icon">📱</span>
-                            <span class="paiement-label">Orange Money</span>
+                            <span class="paiement-radio" aria-hidden="true"></span>
+                            <span class="paiement-texte">
+                                <span class="paiement-label">Orange Money</span>
+                                <span class="paiement-desc">Validation sur votre téléphone</span>
+                            </span>
+                            <span class="paiement-logo logo-orange" aria-hidden="true">OM</span>
                         </span>
                     </label>
                     <label class="paiement-option">
                         <input type="radio" name="paiement" value="wave">
                         <span class="paiement-option-content">
-                            <span class="paiement-icon">🌊</span>
-                            <span class="paiement-label">Wave</span>
+                            <span class="paiement-radio" aria-hidden="true"></span>
+                            <span class="paiement-texte">
+                                <span class="paiement-label">Wave</span>
+                                <span class="paiement-desc">Paiement mobile rapide</span>
+                            </span>
+                            <span class="paiement-logo logo-wave" aria-hidden="true">W</span>
                         </span>
                     </label>
                     <label class="paiement-option">
                         <input type="radio" name="paiement" value="carte">
                         <span class="paiement-option-content">
-                            <span class="paiement-icon">💳</span>
-                            <span class="paiement-label">Carte bancaire</span>
-                        </span>
-                    </label>
-                    <label class="paiement-option">
-                        <input type="radio" name="paiement" value="livraison">
-                        <span class="paiement-option-content">
-                            <span class="paiement-icon">🚚</span>
-                            <span class="paiement-label">À la livraison</span>
+                            <span class="paiement-radio" aria-hidden="true"></span>
+                            <span class="paiement-texte">
+                                <span class="paiement-label">Carte bancaire</span>
+                                <span class="paiement-desc">Visa, Mastercard</span>
+                            </span>
+                            <span class="paiement-logo logo-carte" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                            </span>
                         </span>
                     </label>
                 </div>
+
+                <div class="paiement-groupe-titre">Paiement à la réception</div>
+                <div class="paiement-options">
+                    <label class="paiement-option">
+                        <input type="radio" name="paiement" value="livraison">
+                        <span class="paiement-option-content">
+                            <span class="paiement-radio" aria-hidden="true"></span>
+                            <span class="paiement-texte">
+                                <span class="paiement-label">Paiement à la livraison</span>
+                                <span class="paiement-desc">Réglez en espèces ou Mobile Money à la réception du colis</span>
+                            </span>
+                            <span class="paiement-logo logo-livraison" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                            </span>
+                        </span>
+                    </label>
+                </div>
+
+                <p class="paiement-securite">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Paiements en ligne sécurisés par Moneroo. Vos données bancaires ne transitent jamais par nos serveurs.
+                </p>
             </div>
 
             <div class="panier-summary">
@@ -187,7 +221,7 @@
 
             <!-- INDICATION DE PAIEMENT -->
             <div id="payment-info" class="payment-info" style="display:none;">
-                <p>🔒 Paiements sécurisés par Moneroo/PayDunya — vos données bancaires ne transitent jamais par nos serveurs.</p>
+                <p>Paiements sécurisés par Moneroo — vos données bancaires ne transitent jamais par nos serveurs.</p>
                 <p>Vous allez être redirigé vers la page de paiement sécurisée après validation de votre commande.</p>
             </div>
 

@@ -1218,7 +1218,8 @@ app.post('/api/paiement/initier', checkIdempotencyKey, async (req, res) => {
             description: `Commande Hygia ${commande_id}`,
             return_url: returnUrl,
             customer: {
-                email: client.email || '',
+                // Moneroo exige un email : repli sur l'email de la boutique si le client n'en a pas
+                email: client.email || process.env.MONEROO_FALLBACK_EMAIL || process.env.EMAIL_FROM || '',
                 first_name: client.nom || 'Client',
                 last_name: client.prenom || 'Hygia',
                 phone: client.telephone || ''

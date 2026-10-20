@@ -465,6 +465,7 @@ function annoterStructureCommune() {
     "professionnels.html": "nav.professionnels", "contact.html": "nav.contact", "connexion.html": "nav.connexion"
   };
   document.querySelectorAll(".nav-center a, .nav-right a").forEach(link => {
+    if (link.classList.contains("nav-compte-link")) return; // géré par mettreAJourNavCompte()
     const file = (link.getAttribute("href") || "").split("?")[0];
     if (navKeys[file] && !link.dataset.i18n) link.dataset.i18n = navKeys[file];
   });
@@ -1594,11 +1595,15 @@ function validerFormulaireLivraison() {
         setOk(adresse, "error-adresse");
     }
 
+    // Email facultatif : validé uniquement s'il est renseigné
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email.value.trim())) {
-        setError(email, "error-email", "Veuillez entrer une adresse email valide.");
-    } else {
-        setOk(email, "error-email");
+    if (email) {
+        const valeurEmail = email.value.trim();
+        if (valeurEmail && !emailRegex.test(valeurEmail)) {
+            setError(email, "error-email", "Adresse email invalide. Laissez vide si vous n'en avez pas.");
+        } else {
+            setOk(email, "error-email");
+        }
     }
 
     if (!zone || !zone.value.trim()) {
@@ -1720,7 +1725,7 @@ async function confirmerCommande(methode) {
         enregistrerCommande(panier, methode, totalCommande);
         savePanier([]);
         mettreAJourCompteurPanier();
-        window.location.href = `commande-confirmee.html?numero=${numeroCommande}`;
+        window.location.href = `commande-confirmee.html?ref=${encodeURIComponent(numeroCommande)}`;
         return;
     }
 
@@ -1766,7 +1771,7 @@ async function confirmerCommande(methode) {
             savePanier([]);
             mettreAJourCompteurPanier();
             afficherToast(paymentData.erreur || "Erreur initialisation paiement", "error");
-            window.location.href = `commande-confirmee.html?numero=${numeroCommande}`;
+            window.location.href = `commande-confirmee.html?ref=${encodeURIComponent(numeroCommande)}`;
         }
 
     } catch (err) {
@@ -1778,7 +1783,7 @@ async function confirmerCommande(methode) {
         savePanier([]);
         mettreAJourCompteurPanier();
         afficherToast("Votre commande est enregistrée. Le paiement en ligne est momentanément indisponible.", "info");
-        window.location.href = `commande-confirmee.html?numero=${numeroCommande}`;
+        window.location.href = `commande-confirmee.html?ref=${encodeURIComponent(numeroCommande)}`;
     }
 }
 
@@ -2106,13 +2111,11 @@ function mettreAJourNavCompte() {
     const utilisateur = getUtilisateurConnecte();
 
     liens.forEach(lien => {
-        if (utilisateur) {
-            lien.textContent = t("nav.moncompte");
-            lien.href = "compte.html";
-        } else {
-            lien.textContent = t("nav.connexion");
-            lien.href = "connexion.html";
-        }
+        // La clé i18n doit suivre l'état de connexion, sinon appliquerTraductions() remet "Connexion"
+        const cle = utilisateur ? "nav.moncompte" : "nav.connexion";
+        lien.dataset.i18n = cle;
+        lien.textContent = t(cle);
+        lien.href = utilisateur ? "compte.html" : "connexion.html";
     });
 }
 
@@ -2802,6 +2805,7 @@ function initABTest() {
 document.addEventListener('DOMContentLoaded', async () => {
 
     initLang();
+    mettreAJourNavCompte();
     initWhatsApp();
     initABTest();
     initPromoSystem();
@@ -2827,20 +2831,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     mettreAJourNavCompte();
     initFormulairesAuth();
     await afficherPageCompte();
-
-    const confNumero = document.getElementById("conf-numero");
-    if (confNumero) {
-        const params = new URLSearchParams(window.location.search);
-        const numero = params.get("numero") || "—";
-        const total = Number(params.get("total")) || 0;
-        const methode = params.get("methode") || "—";
-        const nom = params.get("nom") || "—";
-
-        confNumero.textContent = numero;
-        document.getElementById("conf-nom").textContent = nom;
-        document.getElementById("conf-methode").textContent = methode;
-        document.getElementById("conf-total").textContent = total.toLocaleString() + " FCFA";
-    }
 
     // --- Filtres catalogue ---
     const rechercheNom = document.getElementById("recherche-nom") || document.getElementById("search-input");
@@ -2934,6 +2924,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const livraisonForm = document.getElementById("livraison-form");
         const paiementSection = document.getElementById("paiement-section");
 
+        // Libellé du bouton adapté au mode de paiement sélectionné
+        function libelleBoutonPaiement() {
+            const choix = document.querySelector('input[name="paiement"]:checked');
+            return choix && choix.value === "livraison"
+                ? tr("Confirmer la commande", "Confirm order")
+                : tr("Procéder au paiement", "Proceed to payment");
+        }
+        document.querySelectorAll('input[name="paiement"]').forEach(radio => {
+            radio.addEventListener("change", () => {
+                if (btnPaiement.dataset.etape === "paiement") {
+                    btnPaiement.textContent = libelleBoutonPaiement();
+                }
+            });
+        });
+
         btnPaiement.addEventListener("click", () => {
             const panier = getPanier();
             if (panier.length === 0) {
@@ -2961,8 +2966,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (paiementSection) {
                     paiementSection.style.display = "block";
                     paiementSection.scrollIntoView({ behavior: "smooth" });
-                    btnPaiement.textContent = tr("Confirmer la commande", "Confirm order");
                     btnPaiement.dataset.etape = "paiement";
+                    btnPaiement.textContent = libelleBoutonPaiement();
                     return;
                 }
             }
