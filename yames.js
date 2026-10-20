@@ -1678,12 +1678,16 @@ async function confirmerCommande(methode) {
             modePaiement: MODES_PAIEMENT_LABELS[methode] || methode
         };
 
+        const headersCommande = {
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotencyKey
+        };
+        // Rattache la commande au compte du client connecté
+        if (getAccessToken()) headersCommande["Authorization"] = `Bearer ${getAccessToken()}`;
+
         const res = await fetch(`${BACKEND_URL}/api/commandes`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Idempotency-Key": idempotencyKey
-            },
+            headers: headersCommande,
             body: JSON.stringify(payload)
         });
         data = await res.json();
@@ -2564,9 +2568,21 @@ async function afficherPageCompte() {
                 "Authorization": `Bearer ${getAccessToken()}`
             }
         });
-        const data = await res.json();
+        // Session expirée : on le dit au lieu d'afficher une liste vide trompeuse
+        if (res.status === 401) {
+            deconnecterUtilisateur();
+            historiqueContainer.innerHTML = `
+                <div class="historique-vide">
+                    <p>${tr("Votre session a expiré. Reconnectez-vous pour voir vos commandes.", "Your session has expired. Please log in again to see your orders.")}</p>
+                    <a href="connexion.html">${tr("Se reconnecter", "Log in")}</a>
+                </div>`;
+            return;
+        }
 
-        const commandes = (data.succes && data.commandes) ? data.commandes : [];
+        const data = await res.json();
+        if (!res.ok || !data.succes) throw new Error(data.erreur || `HTTP ${res.status}`);
+
+        const commandes = data.commandes || [];
 
         // Stats
         const statCmds = document.getElementById("stat-total-cmds");

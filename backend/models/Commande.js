@@ -37,6 +37,13 @@ const commandeSchema = new mongoose.Schema({
             trim: true
         }
     },
+    // Compte client connecté au moment de la commande (indépendant de l'email saisi)
+    utilisateur: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Utilisateur',
+        default: null,
+        index: true
+    },
     articles: [
         {
             id: Number,

@@ -7,7 +7,7 @@ function signUserToken(utilisateur) {
     return jwt.sign(
         { userId: utilisateur._id.toString(), email: utilisateur.email, nom: utilisateur.nom },
         JWT_SECRET,
-        { expiresIn: '2h' }
+        { expiresIn: '7d' }
     );
 }
 

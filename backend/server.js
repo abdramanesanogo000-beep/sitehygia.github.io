@@ -742,8 +742,15 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
         const estPaiementLivraison = modeNormalise.includes('livraison');
         const statut = estPaiementLivraison ? 'Confirmée' : 'En attente paiement';
 
+        // Si le client est connecté, la commande est rattachée à son compte
+        const utilisateurConnecte = lireUtilisateurOptionnel(req);
+        if (utilisateurConnecte?.email && !client.email) {
+            client.email = utilisateurConnecte.email.toLowerCase().trim();
+        }
+
         const commande = new Commande({
             client,
+            utilisateur: utilisateurConnecte?._id && mongoose.isValidObjectId(utilisateurConnecte._id) ? utilisateurConnecte._id : null,
             articles: articlesFinaux,
             total: totalFinal,
             fraisLivraison,
@@ -789,7 +796,9 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
 // Commandes d'un client (JWT requis)
 app.get('/api/mes-commandes', verifierUtilisateur, async (req, res) => {
     try {
-        const commandes = await Commande.find({ 'client.email': req.user.email.toLowerCase().trim() })
+        const filtres = [{ 'client.email': req.user.email.toLowerCase().trim() }];
+        if (mongoose.isValidObjectId(req.user._id)) filtres.push({ utilisateur: req.user._id });
+        const commandes = await Commande.find({ $or: filtres })
             .sort({ date: -1 })
             .select('numero date articles total modePaiement statut client');
 
@@ -1673,6 +1682,9 @@ app.post('/api/paiement/jemeni-webhook', async (req, res) => {
 // soit la clé de suivi secrète remise au moment de la commande (en-tête X-Cle-Suivi)
 function peutConsulterCommande(req, commande) {
     const utilisateur = lireUtilisateurOptionnel(req);
+    if (utilisateur?._id && commande.utilisateur && String(commande.utilisateur) === String(utilisateur._id)) {
+        return true;
+    }
     if (utilisateur?.email && commande.client?.email &&
         utilisateur.email.toLowerCase().trim() === commande.client.email.toLowerCase().trim()) {
         return true;
