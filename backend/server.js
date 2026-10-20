@@ -680,8 +680,15 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
                 for (const r of rollback) {
                     await Produit.findOneAndUpdate({ id: r.id }, { $inc: { quantiteEnStock: r.quantite } });
                 }
+                const existant = await Produit.findOne({ id }).select('nom quantiteEnStock actif');
+                if (!existant || existant.actif === false) {
+                    return res.status(400).json({ erreur: 'Un produit de votre panier n\'est plus disponible. Retirez-le puis réessayez.' });
+                }
+                const reste = Math.max(0, existant.quantiteEnStock || 0);
                 return res.status(400).json({
-                    erreur: `Stock insuffisant ou produit ${id} introuvable/inactif.`
+                    erreur: reste > 0
+                        ? `Stock insuffisant pour « ${existant.nom} » : ${reste} disponible(s). Réduisez la quantité dans votre panier.`
+                        : `« ${existant.nom} » est en rupture de stock. Retirez-le de votre panier pour continuer.`
                 });
             }
 

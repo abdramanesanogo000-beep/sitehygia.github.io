@@ -2203,6 +2203,17 @@ footer p {
     background-color: #25D366;
 }
 
+/* Produit en rupture : bouton grisé et non cliquable */
+.btn-add-cart.rupture,
+.btn-add-cart.rupture:hover {
+    background: #E4E9F0 !important;
+    color: #7A8CA3 !important;
+    border-color: #E4E9F0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: not-allowed;
+}
+
 @keyframes pop-cart {
     0% {
         transform: scale(1);

@@ -1037,7 +1037,7 @@ function afficherProduits(listeProduits, limite = null, page = 1) {
             <h3>${escapeHtml(produit.nom)}</h3>
           </a>
           <p class="price">${produit.prix.toLocaleString()} FCFA</p>
-          <button class="btn-add-cart" data-id="${produit.id}">${t("btn.add.cart")}</button>
+          ${boutonAjoutPanierHtml(produit)}
         `;
 
             container.appendChild(card);
@@ -1231,13 +1231,35 @@ function savePanier(panier) {
     localStorage.setItem("panier", JSON.stringify(panier));
 }
 
+// Quantité commandable : stock réel du backend, sinon indicateur "stock" de la liste locale
+function stockDisponible(produit) {
+    if (!produit || produit.actif === false) return 0;
+    if (typeof produit.quantiteEnStock === "number") return produit.quantiteEnStock;
+    return produit.stock === false ? 0 : Infinity;
+}
+
+function boutonAjoutPanierHtml(produit) {
+    return stockDisponible(produit) > 0
+        ? `<button class="btn-add-cart" data-id="${produit.id}">${t("btn.add.cart")}</button>`
+        : `<button class="btn-add-cart rupture" type="button" disabled>${tr("Rupture de stock", "Out of stock")}</button>`;
+}
+
 function ajouterAuPanier(idProduit, quantite = 1, afficherOverlay = true) {
     const panier = getPanier();
     const produit = getProduitById(idProduit);
-    if (!produit) return;
+    if (!produit) return false;
 
-    const qte = Math.max(1, Number(quantite) || 1);
+    const stock = stockDisponible(produit);
     const itemExistant = panier.find(item => item.id === idProduit);
+    const dejaAuPanier = itemExistant ? itemExistant.quantite : 0;
+    const qte = Math.min(Math.max(1, Number(quantite) || 1), stock - dejaAuPanier);
+
+    if (qte <= 0) {
+        afficherToast(stock > 0
+            ? tr(`Stock maximum atteint pour ce produit (${stock}).`, `Maximum stock reached for this product (${stock}).`)
+            : tr("Ce produit est en rupture de stock.", "This product is out of stock."), "error");
+        return false;
+    }
 
     if (itemExistant) {
         itemExistant.quantite += qte;
@@ -1250,6 +1272,7 @@ function ajouterAuPanier(idProduit, quantite = 1, afficherOverlay = true) {
     
     // Afficher l'overlay de récapitulatif
     if (afficherOverlay) afficherOverlayAjoutPanier(produit);
+    return true;
 }
 
 function afficherOverlayAjoutPanier(produit) {
@@ -1360,6 +1383,14 @@ function changerQuantite(idProduit, delta) {
     let panier = getPanier();
     const item = panier.find(item => item.id === idProduit);
     if (!item) return;
+
+    const stock = stockDisponible(getProduitById(idProduit));
+    if (delta > 0 && item.quantite + delta > stock) {
+        afficherToast(stock > 0
+            ? tr(`Stock maximum atteint pour ce produit (${stock}).`, `Maximum stock reached for this product (${stock}).`)
+            : tr("Ce produit est en rupture de stock. Retirez-le du panier.", "This product is out of stock. Please remove it."), "error");
+        return;
+    }
 
     item.quantite += delta;
 
@@ -1694,7 +1725,10 @@ async function confirmerCommande(methode) {
         numeroCommande = data.numero || "";
 
         if (!numeroCommande) {
-            throw new Error("Numéro de commande non reçu");
+            // Le serveur explique le refus (stock, champs manquants…) : on transmet son message au client
+            const erreur = new Error(data.erreur || "Numéro de commande non reçu");
+            erreur.messageClient = data.erreur;
+            throw erreur;
         }
         memoriserCleSuivi(numeroCommande, data.cle_suivi);
 
@@ -1707,7 +1741,7 @@ async function confirmerCommande(methode) {
         console.warn("Impossible de créer la commande:", err);
         hideSyphaLoader();
         commandeEnCours = false;
-        alert("Impossible d'enregistrer la commande. Veuillez réessayer.");
+        alert(err.messageClient || "Impossible d'enregistrer la commande. Veuillez réessayer.");
         if (btnPaiement) {
             btnPaiement.textContent = tr("Payer", "Pay");
             btnPaiement.disabled = false;
@@ -1924,7 +1958,7 @@ function afficherPageProduit() {
                         <h3>${escapeHtml(p.nom)}</h3>
                     </a>
                     <p class="price">${p.prix.toLocaleString()} FCFA</p>
-                    <button class="btn-add-cart" data-id="${p.id}">${t("btn.add.cart")}</button>
+                    ${boutonAjoutPanierHtml(p)}
                 `;
                 similairesContainer.appendChild(card);
             });
@@ -2973,7 +3007,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener("click", (e) => {
         if (e.target.classList.contains("btn-add-cart")) {
             const id = Number(e.target.dataset.id);
-            ajouterAuPanier(id);
+            if (!id || !ajouterAuPanier(id)) return;
 
             const btn = e.target;
             btn.textContent = t("btn.added");
