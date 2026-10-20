@@ -167,6 +167,11 @@ app.use((req, res, next) => {
 
 const REDUCTION_CLIENT_PARTENAIRE = 5; // % de réduction client sur code partenaire
 
+// Paiement en ligne (Mobile Money / carte via Moneroo) : désactivé tant que
+// la variable Render PAIEMENT_EN_LIGNE_ACTIF n'est pas égale à "true"
+const PAIEMENT_EN_LIGNE_ACTIF = process.env.PAIEMENT_EN_LIGNE_ACTIF === 'true';
+const MESSAGE_PAIEMENT_EN_LIGNE_INACTIF = 'Le paiement en ligne est momentanément indisponible. Choisissez le paiement à la livraison.';
+
 // Calcule la commission d'un partenaire selon les paliers de chiffre d'affaires généré
 function calculerCommission(totalFCFA) {
     let taux;
@@ -651,6 +656,11 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
 
         if (!client.nom || !client.telephone || !client.adresse || !client.commune) {
             return res.status(400).json({ erreur: 'Informations de livraison incomplètes.' });
+        }
+
+        // Paiement en ligne suspendu : aucune commande « en attente de paiement » n'est créée
+        if (!PAIEMENT_EN_LIGNE_ACTIF && !modePaiement.toLowerCase().includes('livraison')) {
+            return res.status(400).json({ erreur: MESSAGE_PAIEMENT_EN_LIGNE_INACTIF });
         }
 
         if (!Array.isArray(articles) || articles.length === 0) {
@@ -1201,6 +1211,9 @@ const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
 
 // Initier un paiement Moneroo (Orange Money, Moov Money, Mobi Cash au Mali)
 app.post('/api/paiement/initier', checkIdempotencyKey, async (req, res) => {
+    if (!PAIEMENT_EN_LIGNE_ACTIF) {
+        return res.status(403).json({ succes: false, erreur: MESSAGE_PAIEMENT_EN_LIGNE_INACTIF });
+    }
     try {
         const { commande_id, montant, client, methode } = req.body;
 

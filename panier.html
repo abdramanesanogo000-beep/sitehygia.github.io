@@ -137,10 +137,10 @@
                     <p>Choisissez comment vous souhaitez régler votre commande.</p>
                 </div>
 
-                <div class="paiement-groupe-titre">Paiement en ligne</div>
-                <div class="paiement-options">
-                    <label class="paiement-option">
-                        <input type="radio" name="paiement" value="orange" checked>
+                <div class="paiement-groupe-titre">Paiement en ligne <span class="paiement-bientot">Bientôt disponible</span></div>
+                <div class="paiement-options paiement-en-ligne">
+                    <label class="paiement-option indisponible">
+                        <input type="radio" name="paiement" value="orange" disabled>
                         <span class="paiement-option-content">
                             <span class="paiement-radio" aria-hidden="true"></span>
                             <span class="paiement-texte">
@@ -150,8 +150,8 @@
                             <span class="paiement-logo logo-orange" aria-hidden="true">OM</span>
                         </span>
                     </label>
-                    <label class="paiement-option">
-                        <input type="radio" name="paiement" value="wave">
+                    <label class="paiement-option indisponible">
+                        <input type="radio" name="paiement" value="wave" disabled>
                         <span class="paiement-option-content">
                             <span class="paiement-radio" aria-hidden="true"></span>
                             <span class="paiement-texte">
@@ -161,8 +161,8 @@
                             <span class="paiement-logo logo-wave" aria-hidden="true">W</span>
                         </span>
                     </label>
-                    <label class="paiement-option">
-                        <input type="radio" name="paiement" value="carte">
+                    <label class="paiement-option indisponible">
+                        <input type="radio" name="paiement" value="carte" disabled>
                         <span class="paiement-option-content">
                             <span class="paiement-radio" aria-hidden="true"></span>
                             <span class="paiement-texte">
@@ -179,7 +179,7 @@
                 <div class="paiement-groupe-titre">Paiement à la réception</div>
                 <div class="paiement-options">
                     <label class="paiement-option">
-                        <input type="radio" name="paiement" value="livraison">
+                        <input type="radio" name="paiement" value="livraison" checked>
                         <span class="paiement-option-content">
                             <span class="paiement-radio" aria-hidden="true"></span>
                             <span class="paiement-texte">
@@ -195,7 +195,7 @@
 
                 <p class="paiement-securite">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Paiements en ligne sécurisés par Moneroo. Vos données bancaires ne transitent jamais par nos serveurs.
+                    Le paiement en ligne (Mobile Money, carte bancaire) sera bientôt disponible. Pour le moment, réglez votre commande à la livraison.
                 </p>
             </div>
 
@@ -221,7 +221,7 @@
 
             <!-- INDICATION DE PAIEMENT -->
             <div id="payment-info" class="payment-info" style="display:none;">
-                <p>Paiements sécurisés par Moneroo — vos données bancaires ne transitent jamais par nos serveurs.</p>
+                <p>Paiement à la livraison, en espèces ou Mobile Money, à la réception de votre colis.</p>
                 <p>Vous allez être redirigé vers la page de paiement sécurisée après validation de votre commande.</p>
             </div>
 

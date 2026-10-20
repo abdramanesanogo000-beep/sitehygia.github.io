@@ -28,6 +28,12 @@ BACKEND_URL=https://ton-url-render.onrender.com
 exister dans les variables d'environnement de Render (ou dans un fichier `.env`
 local non versionné).
 
+## Paiement en ligne (suspendu)
+
+Le paiement en ligne (Mobile Money, carte via Moneroo) est désactivé : seules les commandes
+« Paiement à la livraison » sont acceptées. Pour le réactiver : `PAIEMENT_EN_LIGNE_ACTIF=true`
+dans Render, `PAIEMENT_EN_LIGNE_ACTIF = true` dans `yames.js`, et retirer `disabled` des options dans `panier.html`.
+
 ## A2F de l'administrateur (obligatoire)
 
 La connexion admin exige le mot de passe **et** un code à 6 chiffres d'une application

@@ -1641,7 +1641,15 @@ function validerFormulaireLivraison() {
 
 let commandeEnCours = false;
 
+// Paiement en ligne (Mobile Money / carte) suspendu : seul le paiement à la livraison est accepté.
+// Pour le réactiver : passer à true ici, retirer "disabled" dans panier.html et PAIEMENT_EN_LIGNE_ACTIF=true sur Render.
+const PAIEMENT_EN_LIGNE_ACTIF = false;
+
 async function confirmerCommande(methode) {
+    if (!PAIEMENT_EN_LIGNE_ACTIF && methode !== "livraison") {
+        afficherToast("Le paiement en ligne est momentanément indisponible. Choisissez le paiement à la livraison.", "error");
+        return;
+    }
     // Empêcher les doubles clics
     if (commandeEnCours) {
         console.log("DEBUG: commande déjà en cours, ignorée");

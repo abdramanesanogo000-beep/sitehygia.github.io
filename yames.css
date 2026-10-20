@@ -1775,6 +1775,33 @@ footer p {
     cursor: pointer;
 }
 
+/* Paiement en ligne momentanément suspendu */
+.paiement-bientot {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #FFF4D6;
+    color: #8A6A00;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    vertical-align: middle;
+}
+
+.paiement-option.indisponible {
+    cursor: not-allowed;
+}
+
+.paiement-option.indisponible .paiement-option-content,
+.paiement-option.indisponible:hover .paiement-option-content {
+    opacity: 0.5;
+    filter: grayscale(1);
+    background: #F5F7FA;
+    border-color: #E4E9F0;
+    box-shadow: none;
+    transform: none;
+}
+
 .paiement-option input[type="radio"] {
     position: absolute;
     opacity: 0;
