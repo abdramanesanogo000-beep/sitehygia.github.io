@@ -1239,24 +1239,25 @@ function savePanier(panier) {
     localStorage.setItem("panier", JSON.stringify(panier));
 }
 
-function ajouterAuPanier(idProduit) {
+function ajouterAuPanier(idProduit, quantite = 1, afficherOverlay = true) {
     const panier = getPanier();
     const produit = getProduitById(idProduit);
     if (!produit) return;
 
+    const qte = Math.max(1, Number(quantite) || 1);
     const itemExistant = panier.find(item => item.id === idProduit);
 
     if (itemExistant) {
-        itemExistant.quantite += 1;
+        itemExistant.quantite += qte;
     } else {
-        panier.push({ id: produit.id, quantite: 1 });
+        panier.push({ id: produit.id, quantite: qte });
     }
 
     savePanier(panier);
     mettreAJourCompteurPanier(true);
     
     // Afficher l'overlay de récapitulatif
-    afficherOverlayAjoutPanier(produit);
+    if (afficherOverlay) afficherOverlayAjoutPanier(produit);
 }
 
 function afficherOverlayAjoutPanier(produit) {
@@ -1805,39 +1806,113 @@ function afficherPageProduit() {
 
     document.title = produit.nom + " — Hygia";
 
+    const CATEGORIES_LABELS = {
+        clinique: tr("Équipement médical", "Medical equipment"),
+        consommable: tr("Consommables médicaux", "Medical supplies")
+    };
+    const libelleCategorie = CATEGORIES_LABELS[produit.categorie] || "";
+    const stock = Number(produit.quantiteEnStock) || 0;
+    const disponible = stock > 0;
+    const qteMax = disponible ? Math.min(stock, 99) : 1;
+
+    let stockHtml;
+    if (!disponible) {
+        stockHtml = `<span class="pd-stock rupture">${tr("Rupture de stock", "Out of stock")}</span>`;
+    } else if (stock <= 5) {
+        stockHtml = `<span class="pd-stock faible">${tr(`Plus que ${stock} en stock`, `Only ${stock} left`)}</span>`;
+    } else {
+        stockHtml = `<span class="pd-stock dispo">${tr("En stock — expédié sous 24h", "In stock — ships within 24h")}</span>`;
+    }
+
+    const prixFormate = produit.prix.toLocaleString("fr-FR") + " FCFA";
+    const imageSrc = escapeHtml(encodeURI(normaliserImage(produit.image)));
+
     container.innerHTML = `
+        <nav class="pd-fil" aria-label="Fil d'Ariane">
+            <a href="index.html">${tr("Accueil", "Home")}</a>
+            <span aria-hidden="true">/</span>
+            <a href="catalogue.html">${tr("Catalogue", "Catalogue")}</a>
+            ${libelleCategorie ? `<span aria-hidden="true">/</span><a href="catalogue.html?categorie=${encodeURIComponent(produit.categorie)}">${escapeHtml(libelleCategorie)}</a>` : ""}
+        </nav>
+
         <div class="produit-detail-image">
-            <img src='${escapeHtml(encodeURI(normaliserImage(produit.image)))}' alt='${escapeHtml(produit.nom)}' loading='lazy' decoding='async' onerror='this.style.display="none";this.onerror=null;'>
+            <div class="pd-image-cadre">
+                <img src='${imageSrc}' alt='${escapeHtml(produit.nom)}' decoding='async' onerror='this.style.display="none";this.onerror=null;'>
+            </div>
         </div>
+
         <div class="produit-detail-info">
+            ${libelleCategorie ? `<span class="pd-categorie">${escapeHtml(libelleCategorie)}</span>` : ""}
             <h1>${escapeHtml(produit.nom)}</h1>
-            <p class="produit-detail-price">${produit.prix.toLocaleString()} FCFA</p>
+            ${produit.marque || produit.reference ? `<p class="pd-meta">${produit.marque ? escapeHtml(produit.marque) : ""}${produit.marque && produit.reference ? " · " : ""}${produit.reference ? "Réf. " + escapeHtml(produit.reference) : ""}</p>` : ""}
+
+            <div class="pd-prix-ligne">
+                <p class="produit-detail-price">${prixFormate}</p>
+                ${stockHtml}
+            </div>
+
             <p class="produit-detail-description">${escapeHtml(getProductDescription(produit))}</p>
 
-            <button class="btn-add-cart" data-id="${produit.id}">${t("btn.add.cart")}</button>
-
-            <section class="avantages-yames">
-                <h3>${tr("Les avantages de Hygia", "Why choose Hygia")}</h3>
-                <div class="avantages-yames-list">
-                    <div class="avantage-item">
-                        <span class="avantage-icon icon-truck"></span>
-                        <span>${tr("Livraison rapide", "Fast delivery")}</span>
-                    </div>
-                    <div class="avantage-item">
-                        <span class="avantage-icon icon-shield"></span>
-                        <span>${tr("Garantie fiable", "Reliable warranty")}</span>
-                    </div>
-                    <div class="avantage-item">
-                        <span class="avantage-icon icon-check"></span>
-                        <span>${tr("Produits certifiés", "Certified products")}</span>
-                    </div>
+            <div class="pd-achat">
+                <div class="pd-quantite" role="group" aria-label="${tr("Quantité", "Quantity")}">
+                    <button type="button" class="pd-qte-btn" data-action="moins" aria-label="${tr("Diminuer", "Decrease")}" ${disponible ? "" : "disabled"}>−</button>
+                    <input type="number" id="pd-qte" value="1" min="1" max="${qteMax}" inputmode="numeric" aria-label="${tr("Quantité", "Quantity")}" ${disponible ? "" : "disabled"}>
+                    <button type="button" class="pd-qte-btn" data-action="plus" aria-label="${tr("Augmenter", "Increase")}" ${disponible ? "" : "disabled"}>+</button>
                 </div>
-            </section>
+                <button type="button" class="pd-btn-ajouter" id="pd-ajouter" ${disponible ? "" : "disabled"}>${t("btn.add.cart")}</button>
+            </div>
+            <button type="button" class="pd-btn-acheter" id="pd-acheter" ${disponible ? "" : "disabled"}>${tr("Acheter maintenant", "Buy now")}</button>
+
+            <ul class="pd-garanties">
+                <li>
+                    <span class="avantage-icon icon-truck"></span>
+                    <div><strong>${tr("Livraison 24 à 48h", "Delivery in 24-48h")}</strong><span>${tr("Partout à Bamako", "Anywhere in Bamako")}</span></div>
+                </li>
+                <li>
+                    <span class="avantage-icon icon-shield"></span>
+                    <div><strong>${tr("Paiement à la livraison", "Cash on delivery")}</strong><span>${tr("Ou Mobile Money en ligne", "Or Mobile Money online")}</span></div>
+                </li>
+                <li>
+                    <span class="avantage-icon icon-check"></span>
+                    <div><strong>${tr("Produits certifiés", "Certified products")}</strong><span>${tr("Qualité médicale garantie", "Medical-grade quality")}</span></div>
+                </li>
+            </ul>
+
+            ${produit.notice ? `<a class="pd-notice" href="${escapeHtml(encodeURI(produit.notice))}" target="_blank" rel="noopener noreferrer">${tr("Consulter la notice du produit", "View product manual")}</a>` : ""}
+        </div>
+
+        <div class="pd-barre-mobile" aria-hidden="${disponible ? "false" : "true"}">
+            <div class="pd-barre-prix">
+                <span>${escapeHtml(produit.nom)}</span>
+                <strong>${prixFormate}</strong>
+            </div>
+            <button type="button" class="pd-btn-ajouter" id="pd-ajouter-mobile" ${disponible ? "" : "disabled"}>${disponible ? tr("Ajouter", "Add") : tr("Indisponible", "Unavailable")}</button>
         </div>
     `;
 
+    // Sélecteur de quantité
+    const inputQte = document.getElementById("pd-qte");
+    const lireQuantite = () => Math.min(qteMax, Math.max(1, parseInt(inputQte.value, 10) || 1));
+    container.querySelectorAll(".pd-qte-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const delta = btn.dataset.action === "plus" ? 1 : -1;
+            inputQte.value = Math.min(qteMax, Math.max(1, lireQuantite() + delta));
+        });
+    });
+    inputQte.addEventListener("change", () => { inputQte.value = lireQuantite(); });
+
+    const ajouter = () => { if (disponible) ajouterAuPanier(produit.id, lireQuantite()); };
+    document.getElementById("pd-ajouter").addEventListener("click", ajouter);
+    document.getElementById("pd-ajouter-mobile").addEventListener("click", ajouter);
+    document.getElementById("pd-acheter").addEventListener("click", () => {
+        if (!disponible) return;
+        ajouterAuPanier(produit.id, lireQuantite(), false);
+        window.location.href = "panier.html";
+    });
+
     const similairesContainer = document.getElementById("produits-similaires");
     if (similairesContainer) {
+        similairesContainer.innerHTML = "";
         const similaires = produits.filter(p => p.categorie === produit.categorie && p.id !== produit.id);
 
         if (similaires.length === 0) {
@@ -2460,25 +2535,19 @@ async function afficherPageCompte() {
     const historiqueContainer = document.getElementById("historique-commandes");
     if (!historiqueContainer) return;
 
-    historiqueContainer.innerHTML = `<div style="text-align:center;padding:30px;color:#888;font-size:14px;">Chargement de vos commandes...</div>`;
+    historiqueContainer.innerHTML = `<div class="cmd-chargement">${tr("Chargement de vos commandes...", "Loading your orders...")}</div>`;
 
-    const statutClasse = (s) => {
-        if (!s) return "en-attente";
-        const val = s.toLowerCase();
-        if (val.includes("livr")) return "livree";
-        if (val.includes("pay")) return "confirmee";
-        if (val.includes("annul")) return "annulee";
-        return "en-attente";
+    // Position du statut dans le suivi (0 à 4) et classe visuelle associée
+    const infosStatut = (s) => {
+        const val = (s || "").toLowerCase();
+        if (val.includes("annul") || val.includes("échou") || val.includes("echou")) return { classe: "annulee", etape: 0 };
+        if (val === "livrée" || val === "livree" || val.includes("payé livré")) return { classe: "livree", etape: 4 };
+        if (val.includes("en livraison")) return { classe: "livraison", etape: 3 };
+        if (val.includes("confirm") || val.includes("non livré")) return { classe: "confirmee", etape: 2 };
+        return { classe: "attente", etape: 1 };
     };
 
-    const iconeMode = (mode) => {
-        if (!mode) return "💳";
-        const m = mode.toLowerCase();
-        if (m.includes("orange")) return "🟠";
-        if (m.includes("wave")) return "🔵";
-        if (m.includes("livraison")) return "�";
-        return "�";
-    };
+    const ETAPES_SUIVI = [tr("Reçue", "Received"), tr("Confirmée", "Confirmed"), tr("En livraison", "Shipping"), tr("Livrée", "Delivered")];
 
     showSyphaLoader("Chargement de vos commandes...");
     try {
@@ -2497,13 +2566,15 @@ async function afficherPageCompte() {
         if (statCmds) statCmds.textContent = commandes.length;
         if (statDerniere && commandes.length > 0) {
             const d = new Date(commandes[0].date);
-            statDerniere.textContent = d.toLocaleDateString("fr-FR");
+            statDerniere.textContent = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
         }
 
         if (commandes.length === 0) {
             historiqueContainer.innerHTML = `
                 <div class="historique-vide">
-                    <div class="vide-icon">📦</div>
+                    <div class="vide-icon">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </div>
                     <p>${tr("Vous n'avez pas encore passé de commande.", "You haven't placed an order yet.")}</p>
                     <a href="catalogue.html">${tr("Découvrir le catalogue", "Discover the catalogue")}</a>
                 </div>`;
@@ -2512,48 +2583,63 @@ async function afficherPageCompte() {
 
         historiqueContainer.innerHTML = "";
         commandes.forEach((commande, index) => {
-            const div = document.createElement("div");
-            div.className = 'commande-card' + (index >= 3 ? ' commande-card-plus commande-card-cache' : '');
-            const date = new Date(commande.date).toLocaleDateString("fr-FR");
-            const itemsHtml = commande.articles.map(a => `
-                <div class="article-ligne">
-                    <span class="art-nom">${escapeHtml(a.nom)}</span>
-                    <span class="art-qty">x${a.quantite}</span>
-                </div>`).join("");
+            const carte = document.createElement("a");
+            carte.className = 'commande-card' + (index >= 3 ? ' commande-card-plus commande-card-cache' : '');
+            carte.href = `commande-detail.html?numero=${encodeURIComponent(commande.numero)}`;
 
-            div.innerHTML = `
-                <div class="commande-card-header">
-                    <span class="cmd-num">Commande ${escapeHtml(commande.numero)}</span>
-                    <span class="cmd-date">📅 ${date}</span>
-                    <span class="statut-badge ${statutClasse(commande.statut)}">${escapeHtml(commande.statut || "En attente")}</span>
+            const date = new Date(commande.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+            const { classe, etape } = infosStatut(commande.statut);
+            const articles = commande.articles || [];
+            const nbArticles = articles.reduce((s, a) => s + (Number(a.quantite) || 0), 0);
+            const resumeArticles = articles.map(a => `${escapeHtml(a.nom)} ×${a.quantite}`).join(", ");
+
+            const progression = classe === "annulee" ? "" : `
+                <div class="cmd-progression ${classe === "livree" ? "livree" : ""}">
+                    ${ETAPES_SUIVI.map((_, i) => `<span class="${i < etape ? "fait" : ""}"></span>`).join("")}
                 </div>
-                <div class="commande-card-body">
-                    <div class="commande-articles">${itemsHtml}</div>
-                </div>
-                <div class="commande-card-footer">
-                    <span class="commande-mode-paiement">${iconeMode(commande.modePaiement)} ${escapeHtml(commande.modePaiement || "—")}</span>
-                    <span class="commande-total-amount">${(commande.total || 0).toLocaleString()} FCFA</span>
-                    <button class="btn-form-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.location.href='commande-detail.html?numero=${escapeHtml(commande.numero)}'">Voir le détail</button>
+                <div class="cmd-etapes-lbl">
+                    ${ETAPES_SUIVI.map((lbl, i) => `<span class="${i < etape ? "fait" : ""}">${lbl}</span>`).join("")}
                 </div>`;
 
-            historiqueContainer.appendChild(div);
+            carte.innerHTML = `
+                <div class="cmd-haut">
+                    <div>
+                        <div class="cmd-num">${escapeHtml(commande.numero)}</div>
+                        <div class="cmd-date">${date} · ${nbArticles} ${nbArticles > 1 ? tr("articles", "items") : tr("article", "item")}</div>
+                    </div>
+                    <span class="statut-badge ${classe}">${escapeHtml(commande.statut || "En attente")}</span>
+                </div>
+                ${progression}
+                <div class="cmd-articles">${resumeArticles}</div>
+                <div class="cmd-bas">
+                    <span class="cmd-paiement">${escapeHtml(commande.modePaiement || "—")}</span>
+                    <span class="cmd-total">${(commande.total || 0).toLocaleString("fr-FR")} FCFA</span>
+                    <span class="cmd-suivre">${tr("Suivre", "Track")}
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                    </span>
+                </div>`;
+
+            historiqueContainer.appendChild(carte);
         });
 
         if (commandes.length > 3) {
+            const restantes = commandes.length - 3;
+            const libelleVoir = tr(`Voir les ${restantes} commandes précédentes`, `Show ${restantes} previous orders`);
             const btn = document.createElement('button');
             btn.className = 'btn-toggle-commandes';
-            btn.textContent = 'Voir les ' + (commandes.length - 3) + ' commandes precedentes';
+            btn.textContent = libelleVoir;
+            btn.dataset.ouvert = "false";
             btn.addEventListener('click', () => {
-                const plus = historiqueContainer.querySelectorAll('.commande-card-plus');
-                const montrer = btn.textContent.includes('Voir');
-                plus.forEach(c => c.classList.toggle('commande-card-cache', !montrer));
-                btn.textContent = montrer ? 'Reduire' : 'Voir les ' + (commandes.length - 3) + ' commandes precedentes';
+                const montrer = btn.dataset.ouvert !== "true";
+                historiqueContainer.querySelectorAll('.commande-card-plus').forEach(c => c.classList.toggle('commande-card-cache', !montrer));
+                btn.dataset.ouvert = String(montrer);
+                btn.textContent = montrer ? tr("Réduire", "Show less") : libelleVoir;
             });
             historiqueContainer.appendChild(btn);
         }
     } catch (err) {
         console.error("Erreur chargement commandes :", err);
-        historiqueContainer.innerHTML = `<div style="text-align:center;padding:30px;color:#c0392b;font-size:14px;">Impossible de charger vos commandes.</div>`;
+        historiqueContainer.innerHTML = `<div class="cmd-erreur">${tr("Impossible de charger vos commandes.", "Unable to load your orders.")}</div>`;
     } finally {
         hideSyphaLoader();
     }

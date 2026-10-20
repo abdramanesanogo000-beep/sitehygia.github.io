@@ -4,625 +4,745 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
     <link rel="stylesheet" href="yames.css">
     <script src="yames.js" defer></script>
     <title>Mon compte — Hygia</title>
     <style>
         /* ===== PAGE COMPTE ===== */
         .compte-page {
+            display: block;
+            max-width: none;
+            margin: 0;
             background: #f0f4f8;
             min-height: 80vh;
-            padding: 0 0 60px;
+            padding: 28px 20px 64px;
         }
 
-        /* --- HERO CONNECTÉ --- */
-        .compte-hero {
-            background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);
-            padding: 48px 40px 80px;
-            color: #fff;
-        }
-
-        .compte-hero-inner {
-            max-width: 1000px;
+        .compte-wrap {
+            max-width: 1080px;
             margin: 0 auto;
+        }
+
+        /* --- EN-TÊTE PROFIL --- */
+        .compte-entete {
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 28px;
+            gap: 20px;
+            background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);
+            color: #fff;
+            border-radius: 18px;
+            padding: 26px 28px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(12, 68, 124, 0.18);
+        }
+
+        .compte-entete::after {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            pointer-events: none;
         }
 
         .compte-avatar {
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.18);
-            border: 3px solid rgba(255,255,255,0.4);
+            background: #FFC94A;
+            color: #0C447C;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 30px;
-            font-weight: 700;
-            color: #fff;
+            font-size: 22px;
+            font-weight: 800;
             flex-shrink: 0;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
-        .compte-hero-info {
+        .compte-identite {
             flex: 1;
+            min-width: 0;
         }
 
-        .compte-hero-info h1 {
-            font-size: 26px;
+        .compte-identite h1 {
+            font-size: 22px;
             font-weight: 700;
             color: #fff;
-            margin: 0 0 6px;
-        }
-
-        .compte-hero-info p {
-            font-size: 14px;
-            color: rgba(255,255,255,0.75);
-            margin: 0;
-        }
-
-        .compte-hero-info .membre-depuis {
-            display: inline-block;
-            margin-top: 8px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.9);
-        }
-
-        .btn-deconnexion {
-            background: rgba(255,255,255,0.12);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.35);
-            border-radius: 8px;
-            padding: 10px 22px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
+            margin: 0 0 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .btn-deconnexion:hover {
-            background: rgba(255,255,255,0.22);
-            border-color: rgba(255,255,255,0.6);
+        .compte-identite p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.78);
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* --- CONTENU PRINCIPAL --- */
-        .compte-body {
-            max-width: 1000px;
-            margin: -40px auto 0;
-            padding: 0 24px;
+        .btn-deconnexion {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
         }
 
-        /* --- STATS --- */
+        .btn-deconnexion:hover { background: rgba(255, 255, 255, 0.22); }
+
+        /* --- STATISTIQUES --- */
         .compte-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 28px;
+            gap: 14px;
+            margin: 18px 0 24px;
         }
 
         .stat-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 22px 24px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            text-align: center;
-        }
-
-        .stat-card .stat-val {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0C447C;
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-
-        .stat-card .stat-lbl {
-            font-size: 13px;
-            color: #888;
-        }
-
-        /* --- SECTION TITRE --- */
-        .compte-section-titre {
-            font-size: 17px;
-            font-weight: 700;
-            color: #1a2d42;
-            margin: 0 0 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .compte-section-titre::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #dde4ed;
-        }
-
-        /* --- COMMANDE CARD --- */
-        .commande-card {
+            gap: 14px;
             background: #fff;
+            border-radius: 14px;
+            padding: 16px 18px;
+            box-shadow: 0 2px 10px rgba(12, 68, 124, 0.05);
+            min-width: 0;
+        }
+
+        .stat-icone {
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            margin-bottom: 16px;
-            overflow: hidden;
-            transition: box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .commande-card:hover {
-            box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+        .stat-icone.bleu { background: #E6F1FB; color: #185FA5; }
+        .stat-icone.vert { background: #e8f7ee; color: #1e8a4c; }
+        .stat-icone.or { background: #fff4d6; color: #b7791f; }
+
+        .stat-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0C447C;
+            line-height: 1.1;
+            white-space: nowrap;
         }
 
-        .commande-card-header {
+        .stat-lbl {
+            font-size: 12px;
+            color: #7a8899;
+            margin-top: 2px;
+        }
+
+        /* --- MISE EN PAGE : MENU + CONTENU --- */
+        .compte-layout {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .compte-tabs {
+            position: sticky;
+            top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #fff;
+            border-radius: 14px;
+            padding: 8px;
+            box-shadow: 0 2px 10px rgba(12, 68, 124, 0.05);
+        }
+
+        .compte-tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 14px;
+            background: none;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5a6b;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .compte-tab-btn svg { flex-shrink: 0; }
+        .compte-tab-btn:hover { background: #f4f8fc; color: #185FA5; }
+
+        .compte-tab-btn.active {
+            background: #E6F1FB;
+            color: #0C447C;
+        }
+
+        .compte-tab-panel { display: none; }
+        .compte-tab-panel.active { display: block; animation: compte-apparition 0.25s ease; }
+
+        @keyframes compte-apparition {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* --- CARTES DE CONTENU --- */
+        .compte-carte {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(12, 68, 124, 0.05);
+            padding: 22px 24px;
+            margin-bottom: 18px;
+        }
+
+        .compte-carte-entete {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 22px;
-            background: #f8fbff;
-            border-bottom: 1px solid #e8f0fb;
             gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .commande-card-header .cmd-num {
-            font-size: 13px;
-            font-weight: 700;
-            color: #0C447C;
-        }
-
-        .commande-card-header .cmd-date {
-            font-size: 13px;
-            color: #888;
-        }
-
-        .statut-badge {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .statut-badge.en-attente   { background: #fff3cd; color: #856404; }
-        .statut-badge.confirmee    { background: #d1ecf1; color: #0c5460; }
-        .statut-badge.livree       { background: #d4edda; color: #155724; }
-        .statut-badge.annulee      { background: #f8d7da; color: #721c24; }
-
-        .commande-card-body {
-            padding: 16px 22px;
-        }
-
-        .commande-articles {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
             margin-bottom: 14px;
         }
 
-        .article-ligne {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #444;
-        }
-
-        .article-ligne .art-nom {
-            flex: 1;
-        }
-
-        .article-ligne .art-qty {
-            background: #eef3fa;
-            color: #0C447C;
-            font-weight: 600;
-            font-size: 12px;
-            padding: 2px 10px;
-            border-radius: 10px;
-            margin-left: 10px;
-        }
-
-        .commande-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 22px;
-            border-top: 1px solid #f0f4f8;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .commande-mode-paiement {
-            font-size: 13px;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .commande-total-amount {
+        .compte-carte-entete h2 {
             font-size: 17px;
-            font-weight: 700;
-            color: #0C447C;
+            color: #1a2d42;
+            margin: 0;
         }
 
-        /* --- VIDE --- */
-        .historique-vide {
-            background: #fff;
-            border-radius: 12px;
-            padding: 48px 30px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-        }
-
-        .historique-vide .vide-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.4;
-        }
-
-        .historique-vide p {
-            color: #888;
-            font-size: 15px;
-            margin-bottom: 20px;
-        }
-
-        .historique-vide a {
-            background: #185FA5;
-            color: #fff;
-            border-radius: 8px;
-            padding: 12px 28px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            display: inline-block;
-            transition: background 0.2s;
-        }
-
-        .historique-vide a:hover { background: #0C447C; }
-
-        /* --- INFOS COMPTE CARD --- */
-        .compte-info-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            padding: 24px 28px;
-            margin-bottom: 28px;
+        .compte-carte-entete p {
+            font-size: 13px;
+            color: #7a8899;
+            margin: 2px 0 0;
         }
 
         .compte-info-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f4f8;
+            padding: 14px 0;
+            border-bottom: 1px solid #eef2f7;
             font-size: 14px;
         }
 
-        .compte-info-row:last-child { border-bottom: none; }
+        .compte-info-row:last-child { border-bottom: none; padding-bottom: 0; }
 
-        .compte-info-row .info-label {
-            width: 140px;
-            color: #999;
+        .info-label {
+            width: 160px;
+            color: #7a8899;
             flex-shrink: 0;
             font-size: 13px;
         }
 
-        .compte-info-row .info-value {
-            color: #222;
-            font-weight: 500;
-        }
-
-        /* --- NON CONNECTÉ --- */
-        .compte-guest {
-            max-width: 480px;
-            margin: 80px auto;
-            background: #fff;
-            border-radius: 16px;
-            padding: 48px 40px;
-            text-align: center;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-        }
-
-        .compte-guest .guest-icon {
-            font-size: 56px;
-            margin-bottom: 20px;
-        }
-
-        .compte-guest h1 {
-            font-size: 24px;
-            font-weight: 700;
+        .info-value {
             color: #1a2d42;
-            margin-bottom: 10px;
+            font-weight: 600;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
-        .compte-guest p {
-            color: #888;
-            font-size: 15px;
-            margin-bottom: 28px;
+        .btn-modifier-profil {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            color: #185FA5;
+            border: 1.5px solid #c9dbef;
+            border-radius: 9px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: border-color 0.2s, background-color 0.2s;
         }
 
-        .compte-guest-btns {
+        .btn-modifier-profil:hover { border-color: #185FA5; background: #f4f9ff; }
+
+        /* --- FORMULAIRES --- */
+        .compte-form-card {
+            display: none;
+            background: #fff;
+            border-radius: 14px;
+            border: 1.5px solid #d7e6f9;
+            padding: 22px 24px;
+            margin-bottom: 18px;
+        }
+
+        .compte-form-card.active { display: block; animation: compte-apparition 0.25s ease; }
+
+        .compte-form-card h3 {
+            margin: 0 0 16px;
+            font-size: 16px;
+            color: #1a2d42;
+        }
+
+        .compte-form-group { margin-bottom: 14px; }
+
+        .compte-form-group label {
+            display: block;
+            font-size: 13px;
+            color: #4a5a6b;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .compte-form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #dde4ed;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .compte-form-group input:focus {
+            outline: none;
+            border-color: #185FA5;
+            box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.12);
+        }
+
+        .compte-form-actions {
             display: flex;
-            gap: 12px;
-            justify-content: center;
+            gap: 10px;
+            margin-top: 18px;
             flex-wrap: wrap;
         }
 
-        .btn-guest-primary {
-            background: #185FA5;
-            color: #fff;
-            border-radius: 8px;
-            padding: 13px 30px;
-            text-decoration: none;
+        .btn-form-primary,
+        .btn-form-secondary {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 14px;
             font-weight: 600;
-            font-size: 15px;
-            transition: background 0.2s;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        .btn-guest-primary:hover { background: #0C447C; }
+        .btn-form-primary { background: #185FA5; color: #fff; }
+        .btn-form-primary:hover { background: #0C447C; }
+        .btn-form-secondary { background: #f0f4f8; color: #4a5a6b; }
+        .btn-form-secondary:hover { background: #e2e9f1; }
 
-        .btn-guest-secondary {
-            background: #f0f4f8;
-            color: #185FA5;
-            border-radius: 8px;
-            padding: 13px 30px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 15px;
-            transition: background 0.2s;
+        .compte-message {
+            display: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 14px;
         }
 
-        .btn-guest-secondary:hover { background: #dde6f0; }
+        .compte-message.success { display: block; background: #e8f7ee; color: #1e7e45; }
+        .compte-message.error { display: block; background: #fdecea; color: #a93226; }
 
-        /* --- DANGER ZONE --- */
-        .compte-danger-zone {
-            margin-top: 40px;
+        /* --- COMMANDES --- */
+        .commande-card {
+            display: block;
             background: #fff;
-            border-radius: 12px;
-            border: 1px solid #fad4d4;
-            padding: 22px 28px;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(12, 68, 124, 0.05);
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            border: 1.5px solid transparent;
+            color: inherit;
+            text-decoration: none;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+
+        .commande-card:hover {
+            border-color: #c9dbef;
+            box-shadow: 0 6px 18px rgba(12, 68, 124, 0.09);
+            transform: translateY(-1px);
+        }
+
+        .commande-card-cache { display: none; }
+
+        .cmd-haut {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .cmd-num {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0C447C;
+        }
+
+        .cmd-date {
+            font-size: 12px;
+            color: #8a97a8;
+            margin-top: 2px;
+        }
+
+        .statut-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .statut-badge.attente { background: #fff6e0; color: #a86b00; }
+        .statut-badge.confirmee { background: #E6F1FB; color: #185FA5; }
+        .statut-badge.livraison { background: #ede7fb; color: #6a3fc0; }
+        .statut-badge.livree { background: #e8f7ee; color: #1e8a4c; }
+        .statut-badge.annulee { background: #fdecea; color: #c0392b; }
+
+        .cmd-progression {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .cmd-progression span {
+            height: 5px;
+            border-radius: 5px;
+            background: #e6ebf1;
+        }
+
+        .cmd-progression span.fait { background: #185FA5; }
+        .cmd-progression.livree span.fait { background: #1e8a4c; }
+
+        .cmd-etapes-lbl {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            font-size: 11px;
+            color: #9aa7b6;
+            margin-bottom: 14px;
+        }
+
+        .cmd-etapes-lbl span.fait { color: #4a5a6b; font-weight: 600; }
+
+        .cmd-articles {
+            font-size: 13px;
+            color: #4a5a6b;
+            line-height: 1.5;
+            margin-bottom: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .cmd-bas {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
+            gap: 12px;
+            padding-top: 14px;
+            border-top: 1px solid #eef2f7;
+        }
+
+        .cmd-paiement {
+            font-size: 12px;
+            color: #7a8899;
+        }
+
+        .cmd-total {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0C447C;
+        }
+
+        .cmd-suivre {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #185FA5;
+            white-space: nowrap;
+        }
+
+        .btn-toggle-commandes {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            background: #fff;
+            border: 1.5px dashed #c9dbef;
+            border-radius: 12px;
+            color: #185FA5;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-toggle-commandes:hover { background: #f4f9ff; }
+
+        .historique-vide {
+            background: #fff;
+            border: none;
+            border-radius: 14px;
+            padding: 44px 24px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(12, 68, 124, 0.05);
+        }
+
+        .historique-vide .vide-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #E6F1FB;
+            color: #185FA5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .historique-vide p {
+            color: #6b7a8c;
+            font-size: 15px;
+            margin: 0 0 20px;
+        }
+
+        .historique-vide a {
+            display: inline-block;
+            background: #185FA5;
+            color: #fff;
+            border-radius: 10px;
+            padding: 12px 26px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .historique-vide a:hover { background: #0C447C; }
+
+        .cmd-chargement,
+        .cmd-erreur {
+            text-align: center;
+            padding: 30px;
+            font-size: 14px;
+            color: #7a8899;
+            background: #fff;
+            border-radius: 14px;
+        }
+
+        .cmd-erreur { color: #c0392b; }
+
+        /* --- ZONE SENSIBLE --- */
+        .compte-danger-zone {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: #fff;
+            border: 1.5px solid #f6d3cf;
+            border-radius: 14px;
+            padding: 20px 24px;
             flex-wrap: wrap;
         }
 
-        .compte-danger-zone .danger-texte strong {
+        .compte-danger-zone strong {
             display: block;
             font-size: 15px;
             color: #c0392b;
             margin-bottom: 4px;
         }
 
-        .compte-danger-zone .danger-texte p {
+        .compte-danger-zone p {
             font-size: 13px;
-            color: #999;
+            color: #7a8899;
             margin: 0;
         }
 
         .btn-supprimer-compte {
             background: #fff;
             color: #c0392b;
-            border: 1.5px solid #e74c3c;
-            border-radius: 8px;
-            padding: 10px 22px;
+            border: 1.5px solid #e9a69e;
+            border-radius: 10px;
+            padding: 10px 18px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s;
             white-space: nowrap;
-            flex-shrink: 0;
+            transition: background-color 0.2s, color 0.2s;
         }
 
-        .btn-supprimer-compte:hover {
-            background: #e74c3c;
-            color: #fff;
-        }
+        .btn-supprimer-compte:hover { background: #c0392b; border-color: #c0392b; color: #fff; }
 
-        /* --- FORMULAIRE MODIFIER PROFIL --- */
-        .compte-form-card {
+        /* --- VISITEUR NON CONNECTÉ --- */
+        .compte-guest {
+            max-width: 440px;
+            margin: 40px auto;
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            padding: 24px 28px;
-            margin-bottom: 28px;
-            display: none;
+            border-radius: 18px;
+            padding: 44px 32px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(12, 68, 124, 0.08);
         }
 
-        .compte-form-card.active {
-            display: block;
-        }
-
-        .compte-form-card h3 {
-            margin: 0 0 18px;
-            font-size: 16px;
-            color: #1a2d42;
-        }
-
-        .compte-form-group {
-            margin-bottom: 16px;
-        }
-
-        .compte-form-group label {
-            display: block;
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-
-        .compte-form-group input {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1px solid #dde4ed;
-            border-radius: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-
-        .compte-form-group input:focus {
-            outline: none;
-            border-color: #185FA5;
-        }
-
-        .compte-form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .btn-form-primary {
-            background: #185FA5;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 11px 22px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-form-primary:hover { background: #0C447C; }
-
-        .btn-form-secondary {
-            background: #f0f4f8;
-            color: #555;
-            border: none;
-            border-radius: 8px;
-            padding: 11px 22px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-form-secondary:hover { background: #dde6f0; }
-
-        .btn-modifier-profil {
-            background: #fff;
+        .compte-guest .guest-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #E6F1FB;
             color: #185FA5;
-            border: 1.5px solid #185FA5;
-            border-radius: 8px;
-            padding: 9px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .btn-modifier-profil:hover {
-            background: #185FA5;
-            color: #fff;
-        }
-
-        .compte-info-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .compte-message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .compte-message.success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-
-        .compte-message.error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-
-        /* --- ONGLETS --- */
-        .compte-tabs {
-            display: flex;
-            gap: 4px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            padding: 6px;
-            margin-bottom: 24px;
-        }
-
-        .compte-tab-btn {
-            flex: 1;
-            padding: 11px 8px;
-            background: none;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #888;
-            cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            margin: 0 auto 20px;
         }
 
-        .compte-tab-btn:hover {
-            background: #f0f4f8;
-            color: #185FA5;
+        .compte-guest h1 {
+            font-size: 22px;
+            color: #1a2d42;
+            margin: 0 0 10px;
         }
 
-        .compte-tab-btn.active {
-            background: #185FA5;
-            color: #fff;
+        .compte-guest p {
+            color: #6b7a8c;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0 0 26px;
         }
 
-        .compte-tab-panel {
-            display: none;
+        .compte-guest-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .compte-tab-panel.active {
+        .btn-guest-primary,
+        .btn-guest-secondary {
             display: block;
+            border-radius: 10px;
+            padding: 13px 20px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: background-color 0.2s;
         }
 
-        /* --- RESPONSIVE --- */
-        @media (max-width: 640px) {
-            .compte-hero { padding: 36px 20px 70px; }
-            .compte-hero-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .compte-body { padding: 0 14px; }
-            .compte-stats { grid-template-columns: 1fr; }
-            .compte-danger-zone { flex-direction: column; align-items: flex-start; }
-            .compte-guest { padding: 36px 20px; margin: 40px 16px; }
-            .compte-tab-btn { font-size: 11px; padding: 9px 4px; }
+        .btn-guest-primary { background: #185FA5; color: #fff; }
+        .btn-guest-primary:hover { background: #0C447C; }
+        .btn-guest-secondary { background: #f0f4f8; color: #185FA5; }
+        .btn-guest-secondary:hover { background: #e2e9f1; }
+
+        /* --- TABLETTE --- */
+        @media (max-width: 900px) {
+            .compte-layout { grid-template-columns: 1fr; gap: 16px; }
+
+            /* Le menu latéral devient une barre d'onglets horizontale */
+            .compte-tabs {
+                position: sticky;
+                top: 0;
+                z-index: 5;
+                flex-direction: row;
+                padding: 6px;
+            }
+
+            .compte-tab-btn {
+                justify-content: center;
+                padding: 11px 8px;
+                font-size: 13px;
+                gap: 8px;
+            }
         }
-    .commande-card-cache { display: none; }
-    .btn-toggle-commandes {
-        display: block;
-        width: 100%;
-        margin-top: 12px;
-        padding: 12px;
-        background: #fff;
-        border: 1px solid #dde4ed;
-        border-radius: 8px;
-        color: #185FA5;
-        font-weight: 600;
-        cursor: pointer;
-        text-align: center;
-    }
-    .btn-toggle-commandes:hover { background: #f0f4f8; }
+
+        /* --- MOBILE --- */
+        @media (max-width: 600px) {
+            .compte-page { padding: 14px 12px 48px; }
+
+            .compte-entete {
+                padding: 20px 18px;
+                gap: 14px;
+                border-radius: 16px;
+                flex-wrap: wrap;
+            }
+
+            .compte-avatar { width: 52px; height: 52px; font-size: 18px; }
+            .compte-identite h1 { font-size: 18px; }
+            .compte-identite p { font-size: 13px; }
+
+            .btn-deconnexion {
+                width: 100%;
+                justify-content: center;
+                padding: 10px;
+            }
+
+            .compte-stats { gap: 8px; margin: 12px 0 16px; }
+
+            .stat-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .stat-icone { width: 32px; height: 32px; border-radius: 9px; }
+            .stat-icone svg { width: 16px; height: 16px; }
+            .stat-val { font-size: 16px; }
+            .stat-lbl { font-size: 11px; }
+
+            .compte-tab-btn { flex-direction: column; gap: 4px; font-size: 11px; padding: 9px 4px; }
+
+            .compte-carte,
+            .compte-form-card { padding: 18px 16px; border-radius: 12px; }
+
+            .compte-carte-entete { align-items: flex-start; }
+
+            .compte-info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 3px;
+                padding: 12px 0;
+            }
+
+            .compte-info-row.ligne-action {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .info-label { width: auto; }
+
+            .compte-form-actions button { flex: 1; }
+
+            .commande-card { padding: 16px; border-radius: 12px; }
+            .cmd-etapes-lbl { font-size: 10px; }
+            .cmd-bas { flex-wrap: wrap; }
+            .cmd-paiement { width: 100%; }
+
+            .compte-danger-zone { padding: 18px 16px; }
+            .btn-supprimer-compte { width: 100%; }
+
+            .compte-guest { margin: 16px auto; padding: 32px 20px; }
+        }
     </style>
 </head>
 
@@ -648,22 +768,24 @@
             <form action="/recherche" method="GET">
                 <label for="search-input">Rechercher</label>
                 <input type="search" id="search-input" name="q" placeholder="Rechercher sur le site...">
-                <button type="submit">🔍</button>
+                <button type="submit" aria-label="Rechercher"></button>
             </form>
             <a href="connexion.html" class="nav-compte-link">Connexion</a>
             <a href="panier.html" aria-label="Panier"><span id="cart-count">0</span></a>
         </div>
     </nav>
 
-    <main>
-        <div class="compte-page">
+    <main class="compte-page">
+        <div class="compte-wrap">
 
             <!-- ===== NON CONNECTÉ ===== -->
             <div id="compte-non-connecte" style="display:none;">
                 <div class="compte-guest">
-                    <div class="guest-icon">👤</div>
+                    <div class="guest-icon">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
                     <h1>Mon espace personnel</h1>
-                    <p>Connectez-vous pour accéder à votre compte, suivre vos commandes et gérer vos informations.</p>
+                    <p>Connectez-vous pour suivre vos commandes, gérer vos informations et cumuler des points fidélité.</p>
                     <div class="compte-guest-btns">
                         <a href="connexion.html" class="btn-guest-primary">Se connecter</a>
                         <a href="inscription.html" class="btn-guest-secondary">Créer un compte</a>
@@ -674,148 +796,181 @@
             <!-- ===== CONNECTÉ ===== -->
             <div id="compte-connecte" style="display:none;">
 
-                <!-- HERO -->
-                <div class="compte-hero">
-                    <div class="compte-hero-inner">
-                        <div class="compte-avatar" id="compte-avatar">—</div>
-                        <div class="compte-hero-info">
-                            <h1 id="compte-nom">Bonjour</h1>
-                            <p id="compte-email"></p>
-                            <span class="membre-depuis">✦ Client Hygia</span>
-                        </div>
-                        <button id="btn-deconnexion" class="btn-deconnexion">Se déconnecter</button>
+                <!-- EN-TÊTE -->
+                <div class="compte-entete">
+                    <div class="compte-avatar" id="compte-avatar">—</div>
+                    <div class="compte-identite">
+                        <h1 id="compte-nom">Bonjour</h1>
+                        <p id="compte-email"></p>
                     </div>
+                    <button id="btn-deconnexion" class="btn-deconnexion">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Se déconnecter
+                    </button>
                 </div>
 
-                <!-- CORPS -->
-                <div class="compte-body">
-
-                    <!-- STATS -->
-                    <div class="compte-stats">
-                        <div class="stat-card">
+                <!-- STATISTIQUES -->
+                <div class="compte-stats">
+                    <div class="stat-card">
+                        <span class="stat-icone bleu">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        </span>
+                        <div>
                             <div class="stat-val" id="stat-total-cmds">0</div>
-                            <div class="stat-lbl">Commande(s)</div>
+                            <div class="stat-lbl">Commandes</div>
                         </div>
-                        <div class="stat-card">
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icone vert">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </span>
+                        <div>
                             <div class="stat-val" id="stat-derniere">—</div>
                             <div class="stat-lbl">Dernière commande</div>
                         </div>
-                        <div class="stat-card">
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icone or">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </span>
+                        <div>
                             <div class="stat-val" id="stat-points">—</div>
                             <div class="stat-lbl">Points fidélité</div>
                         </div>
                     </div>
-
-                    <!-- ONGLETS -->
-                    <div class="compte-tabs">
-                        <button class="compte-tab-btn active" onclick="afficherOnglet('infos', this)">👤 Mes infos</button>
-                        <button class="compte-tab-btn" onclick="afficherOnglet('commandes', this)">&#128230; Mes commandes</button>
-                        <button class="compte-tab-btn" onclick="afficherOnglet('securite', this)">🔒 Sécurité</button>
-                    </div>
-
-                    <!-- ONGLET : MES INFOS -->
-                    <div id="tab-infos" class="compte-tab-panel active">
-                        <div class="compte-info-header">
-                            <p class="compte-section-titre" style="margin:0;">Mes informations</p>
-                            <button id="btn-modifier-profil" class="btn-modifier-profil">Modifier</button>
-                        </div>
-                        <div class="compte-info-card">
-                            <div class="compte-info-row">
-                                <span class="info-label">Nom complet</span>
-                                <span class="info-value" id="info-nom">—</span>
-                            </div>
-                            <div class="compte-info-row">
-                                <span class="info-label">Adresse e-mail</span>
-                                <span class="info-value" id="info-email">—</span>
-                            </div>
-                            <div class="compte-info-row">
-                                <span class="info-label">Téléphone</span>
-                                <span class="info-value" id="info-telephone">—</span>
-                            </div>
-                        </div>
-                        <div id="form-profil-card" class="compte-form-card">
-                            <h3>Modifier mes informations</h3>
-                            <div id="profil-message" class="compte-message"></div>
-                            <form id="form-profil">
-                                <div class="compte-form-group">
-                                    <label for="profil-nom">Nom complet</label>
-                                    <input type="text" id="profil-nom" name="nom" required>
-                                </div>
-                                <div class="compte-form-group">
-                                    <label for="profil-telephone">Téléphone</label>
-                                    <input type="tel" id="profil-telephone" name="telephone" required>
-                                </div>
-                                <div class="compte-form-group">
-                                    <label for="profil-motdepasse">Mot de passe actuel (obligatoire)</label>
-                                    <input type="password" id="profil-motdepasse" name="motdepasse" required placeholder="Entrez votre mot de passe pour confirmer">
-                                </div>
-                                <div class="compte-form-actions">
-                                    <button type="submit" class="btn-form-primary">Enregistrer les modifications</button>
-                                    <button type="button" id="btn-annuler-profil" class="btn-form-secondary">Annuler</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- ONGLET : MES COMMANDES -->
-                    <div id="tab-commandes" class="compte-tab-panel">
-                        <p class="compte-section-titre">Mes commandes</p>
-                        <div id="historique-commandes"></div>
-                    </div>
-
-                    <!-- ONGLET : SÉCURITÉ -->
-                    <div id="tab-securite" class="compte-tab-panel">
-                        <p class="compte-section-titre">Sécurité</p>
-                        <div class="compte-info-card" style="margin-bottom: 24px;">
-                            <div class="compte-info-row" style="justify-content: space-between;">
-                                <div>
-                                    <span class="info-value">Mot de passe</span>
-                                    <p style="margin: 4px 0 0; font-size: 13px; color: #888;">Changez votre mot de passe régulièrement pour plus de sécurité.</p>
-                                </div>
-                                <button id="btn-changer-password" class="btn-modifier-profil">Changer</button>
-                            </div>
-                        </div>
-                        <div class="compte-info-card" style="margin-bottom: 24px;">
-                            <div class="compte-info-row" style="justify-content: space-between;">
-                                <div>
-                                    <span class="info-value">Mot de passe oublié</span>
-                                    <p style="margin: 4px 0 0; font-size: 13px; color: #888;">Réinitialisez votre mot de passe par email si vous l'avez oublié.</p>
-                                </div>
-                                <a href="mot-de-passe-oublie.html" class="btn-modifier-profil" style="text-decoration: none; display: inline-block;">Réinitialiser</a>
-                            </div>
-                        </div>
-                        <div id="form-password-card" class="compte-form-card">
-                            <h3>Changer mon mot de passe</h3>
-                            <div id="password-message" class="compte-message"></div>
-                            <form id="form-password">
-                                <div class="compte-form-group">
-                                    <label for="password-ancien">Mot de passe actuel</label>
-                                    <input type="password" id="password-ancien" name="ancien" required>
-                                </div>
-                                <div class="compte-form-group">
-                                    <label for="password-nouveau">Nouveau mot de passe</label>
-                                    <input type="password" id="password-nouveau" name="nouveau" required minlength="6">
-                                </div>
-                                <div class="compte-form-group">
-                                    <label for="password-confirmation">Confirmer le nouveau mot de passe</label>
-                                    <input type="password" id="password-confirmation" name="confirmation" required minlength="6">
-                                </div>
-                                <div class="compte-form-actions">
-                                    <button type="submit" class="btn-form-primary">Changer le mot de passe</button>
-                                    <button type="button" id="btn-annuler-password" class="btn-form-secondary">Annuler</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="compte-danger-zone" style="margin-top:24px;">
-                            <div class="danger-texte">
-                                <strong>Supprimer mon compte</strong>
-                                <p>Cette action est irréversible. Toutes vos données seront supprimées définitivement.</p>
-                            </div>
-                            <button id="btn-supprimer-compte" class="btn-supprimer-compte">Supprimer mon compte</button>
-                        </div>
-                    </div>
-
                 </div>
+
+                <div class="compte-layout">
+
+                    <!-- MENU -->
+                    <div class="compte-tabs" role="tablist">
+                        <button class="compte-tab-btn active" role="tab" onclick="afficherOnglet('commandes', this)">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            <span>Mes commandes</span>
+                        </button>
+                        <button class="compte-tab-btn" role="tab" onclick="afficherOnglet('infos', this)">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>Mes infos</span>
+                        </button>
+                        <button class="compte-tab-btn" role="tab" onclick="afficherOnglet('securite', this)">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span>Sécurité</span>
+                        </button>
+                    </div>
+
+                    <div>
+                        <!-- ONGLET : MES COMMANDES -->
+                        <div id="tab-commandes" class="compte-tab-panel active" role="tabpanel">
+                            <div id="historique-commandes"></div>
+                        </div>
+
+                        <!-- ONGLET : MES INFOS -->
+                        <div id="tab-infos" class="compte-tab-panel" role="tabpanel">
+                            <div class="compte-carte">
+                                <div class="compte-carte-entete">
+                                    <div>
+                                        <h2>Mes informations</h2>
+                                        <p>Utilisées pour vos livraisons et vos reçus.</p>
+                                    </div>
+                                    <button id="btn-modifier-profil" class="btn-modifier-profil">Modifier</button>
+                                </div>
+                                <div class="compte-info-row">
+                                    <span class="info-label">Nom complet</span>
+                                    <span class="info-value" id="info-nom">—</span>
+                                </div>
+                                <div class="compte-info-row">
+                                    <span class="info-label">Adresse e-mail</span>
+                                    <span class="info-value" id="info-email">—</span>
+                                </div>
+                                <div class="compte-info-row">
+                                    <span class="info-label">Téléphone</span>
+                                    <span class="info-value" id="info-telephone">—</span>
+                                </div>
+                            </div>
+
+                            <div id="form-profil-card" class="compte-form-card">
+                                <h3>Modifier mes informations</h3>
+                                <div id="profil-message" class="compte-message"></div>
+                                <form id="form-profil">
+                                    <div class="compte-form-group">
+                                        <label for="profil-nom">Nom complet</label>
+                                        <input type="text" id="profil-nom" name="nom" required autocomplete="name">
+                                    </div>
+                                    <div class="compte-form-group">
+                                        <label for="profil-telephone">Téléphone</label>
+                                        <input type="tel" id="profil-telephone" name="telephone" required autocomplete="tel">
+                                    </div>
+                                    <div class="compte-form-group">
+                                        <label for="profil-motdepasse">Mot de passe actuel (pour confirmer)</label>
+                                        <input type="password" id="profil-motdepasse" name="motdepasse" required placeholder="Votre mot de passe" autocomplete="current-password">
+                                    </div>
+                                    <div class="compte-form-actions">
+                                        <button type="submit" class="btn-form-primary">Enregistrer</button>
+                                        <button type="button" id="btn-annuler-profil" class="btn-form-secondary">Annuler</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- ONGLET : SÉCURITÉ -->
+                        <div id="tab-securite" class="compte-tab-panel" role="tabpanel">
+                            <div class="compte-carte">
+                                <div class="compte-carte-entete">
+                                    <div>
+                                        <h2>Connexion et sécurité</h2>
+                                        <p>Gardez votre compte protégé.</p>
+                                    </div>
+                                </div>
+                                <div class="compte-info-row ligne-action" style="justify-content: space-between;">
+                                    <div>
+                                        <span class="info-value">Mot de passe</span>
+                                        <p style="margin: 4px 0 0; font-size: 13px; color: #7a8899;">Changez-le régulièrement.</p>
+                                    </div>
+                                    <button id="btn-changer-password" class="btn-modifier-profil">Changer</button>
+                                </div>
+                                <div class="compte-info-row ligne-action" style="justify-content: space-between;">
+                                    <div>
+                                        <span class="info-value">Mot de passe oublié</span>
+                                        <p style="margin: 4px 0 0; font-size: 13px; color: #7a8899;">Recevez un lien par email.</p>
+                                    </div>
+                                    <a href="mot-de-passe-oublie.html" class="btn-modifier-profil">Réinitialiser</a>
+                                </div>
+                            </div>
+
+                            <div id="form-password-card" class="compte-form-card">
+                                <h3>Changer mon mot de passe</h3>
+                                <div id="password-message" class="compte-message"></div>
+                                <form id="form-password">
+                                    <div class="compte-form-group">
+                                        <label for="password-ancien">Mot de passe actuel</label>
+                                        <input type="password" id="password-ancien" name="ancien" required autocomplete="current-password">
+                                    </div>
+                                    <div class="compte-form-group">
+                                        <label for="password-nouveau">Nouveau mot de passe</label>
+                                        <input type="password" id="password-nouveau" name="nouveau" required minlength="6" autocomplete="new-password">
+                                    </div>
+                                    <div class="compte-form-group">
+                                        <label for="password-confirmation">Confirmer le nouveau mot de passe</label>
+                                        <input type="password" id="password-confirmation" name="confirmation" required minlength="6" autocomplete="new-password">
+                                    </div>
+                                    <div class="compte-form-actions">
+                                        <button type="submit" class="btn-form-primary">Changer le mot de passe</button>
+                                        <button type="button" id="btn-annuler-password" class="btn-form-secondary">Annuler</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="compte-danger-zone">
+                                <div>
+                                    <strong>Supprimer mon compte</strong>
+                                    <p>Action irréversible : toutes vos données seront supprimées.</p>
+                                </div>
+                                <button id="btn-supprimer-compte" class="btn-supprimer-compte">Supprimer mon compte</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
