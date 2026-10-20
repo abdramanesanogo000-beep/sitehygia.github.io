@@ -3976,14 +3976,6 @@ img {
         height: 46px;
     }
 
-    /* Remonter les boutons flottants au-dessus de la barre d'achat */
-    html:has(.pd-barre-mobile) #whatsapp-widget {
-        bottom: 84px !important;
-    }
-
-    html:has(.pd-barre-mobile) #lang-select {
-        bottom: 148px !important;
-    }
 
     .panier-item {
         flex-wrap: wrap;
