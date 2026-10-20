@@ -263,95 +263,83 @@ Si vous n'avez pas fait cette demande, ignorez cet email.
 
 L'équipe Hygia`;
 
-    const html = `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Réinitialisation mot de passe</title></head>
-<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;">
-<div style="max-width:560px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+    const prenom = String(nom || '').trim().split(/\s+/)[0];
 
-  <div style="background:linear-gradient(135deg,#185FA5,#0e3d6e);padding:30px 28px;text-align:center;">
-    <div style="font-size:30px;font-weight:900;color:#fff;letter-spacing:2px;">HYGIA</div>
-    <div style="color:#a8d0f7;font-size:12px;margin-top:4px;">MATÉRIEL MÉDICAL PROFESSIONNEL — BAMAKO</div>
-  </div>
+    const contenu = `
+        <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#185FA5;">Sécurité du compte</p>
+        <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;color:#0C447C;">Réinitialisez votre mot de passe</h1>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#44546A;">Bonjour${prenom ? ' ' + esc(prenom) : ''}, nous avons reçu une demande de réinitialisation du mot de passe de votre compte Hygia. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.</p>
+        ${boutonEmail(esc(lien), 'Choisir un nouveau mot de passe')}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;background:#FFF9E8;border-left:4px solid #FFC94A;border-radius:6px;">
+          <tr><td style="padding:14px 16px;font-size:14px;line-height:1.55;color:#5C4A12;">Ce lien est valable <strong>1 heure</strong> et ne peut être utilisé qu'une fois.</td></tr>
+        </table>
+        <p style="margin:28px 0 0;padding-top:20px;border-top:1px solid #E6ECF3;font-size:13px;line-height:1.6;color:#7A8CA3;">Vous n'êtes pas à l'origine de cette demande ? Ignorez cet email : votre mot de passe actuel reste inchangé.<br>Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br><a href="${esc(lien)}" style="color:#185FA5;word-break:break-all;">${esc(lien)}</a></p>`;
 
-  <div style="padding:32px 28px;">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:44px;">🔐</div>
-      <h2 style="color:#185FA5;margin:10px 0 4px;font-size:20px;">Réinitialisation du mot de passe</h2>
-    </div>
-
-    <p style="font-size:14px;color:#333;margin:0 0 16px;">Bonjour <strong>${nom}</strong>,</p>
-    <p style="font-size:14px;color:#555;margin:0 0 28px;">Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.</p>
-
-    <div style="text-align:center;margin-bottom:28px;">
-      <a href="${lien}" style="display:inline-block;background:#185FA5;color:#fff;padding:14px 36px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:700;">Réinitialiser mon mot de passe →</a>
-    </div>
-
-    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-      <p style="margin:0;font-size:12px;color:#856404;">⏱ Ce lien est valable <strong>1 heure</strong> seulement. Passé ce délai, vous devrez refaire une demande.</p>
-    </div>
-
-    <p style="font-size:12px;color:#aaa;margin:0;text-align:center;">Si vous n'avez pas demandé cette réinitialisation, ignorez simplement cet email.</p>
-  </div>
-
-  <div style="background:#f0f4f8;padding:18px 28px;text-align:center;border-top:1px solid #e8eef5;">
-    <p style="margin:0;font-size:11px;color:#888;">© ${new Date().getFullYear()} Hygia — Matériel médical professionnel à Bamako, Mali</p>
-  </div>
-
-</div>
-</body>
-</html>`;
+    const html = gabaritEmail({ titre: sujet, apercu: 'Votre lien de réinitialisation, valable 1 heure.', contenu });
 
     return envoyerEmail({ to: email, subject: sujet, text: texte, html });
+}
+
+// Message, étape de suivi et couleur affichés pour chaque statut de commande
+const INFOS_STATUT = {
+    'Confirmée':       { etape: 2, couleur: '#185FA5', message: 'Votre commande est confirmée. Nous la préparons avec soin.' },
+    'Payé non livré':  { etape: 2, couleur: '#185FA5', message: 'Votre paiement est confirmé. Nous préparons votre commande.' },
+    'En livraison':    { etape: 3, couleur: '#8B2FC9', message: 'Votre colis a été remis au livreur. Il vous contactera par téléphone avant de passer.' },
+    'Livrée':          { etape: 4, couleur: '#1E8E5A', message: 'Votre commande a été livrée. Merci pour votre confiance.' },
+    'Payé livré':      { etape: 4, couleur: '#1E8E5A', message: 'Votre commande a été livrée. Merci pour votre confiance.' },
+    'Annulée':         { etape: 0, couleur: '#C0392B', message: 'Votre commande a été annulée. Contactez-nous si vous pensez qu\'il s\'agit d\'une erreur.' },
+    'Paiement échoué': { etape: 0, couleur: '#C0392B', message: 'Le paiement de votre commande n\'a pas abouti. Vous pouvez repasser commande ou nous contacter.' }
+};
+
+function suiviEmailHtml(etape, couleur) {
+    const etapes = ['Reçue', 'Confirmée', 'En livraison', 'Livrée'];
+    const cellules = etapes.map((libelle, i) => {
+        const fait = i < etape;
+        return `<td width="25%" align="center" style="padding:0 3px;">
+            <div style="height:6px;border-radius:3px;background:${fait ? couleur : '#E4E9F0'};"></div>
+            <div style="padding-top:8px;font-size:12px;font-weight:${fait ? '600' : '400'};color:${fait ? '#1F2D3D' : '#9AA8BA'};">${libelle}</div>
+          </td>`;
+    }).join('');
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 4px;"><tr>${cellules}</tr></table>`;
 }
 
 async function envoyerEmailNotificationStatutCommande(commande, ancienStatut) {
     const { nom, email } = commande.client || {};
     if (!email) return { succes: false, raison: 'Email client manquant' };
 
-    const sujet = `Votre commande ${commande.numero} est ${commande.statut} — Hygia`;
+    const statut = commande.statut || 'En attente';
+    const infos = INFOS_STATUT[statut] || { etape: 1, couleur: '#185FA5', message: 'Votre commande a été mise à jour.' };
+    const prenom = String(nom || '').trim().split(/\s+/)[0];
+    const lienSuivi = `${FRONTEND_URL}/commande-detail.html?numero=${encodeURIComponent(commande.numero)}`;
 
-    const texte = `Bonjour ${nom || 'client'},
+    const sujet = `Commande ${commande.numero} : ${statut.toLowerCase()} — Hygia`;
 
-Votre commande ${commande.numero} a évolué.
+    const texte = `Bonjour${prenom ? ' ' + prenom : ''},
 
-Ancien statut : ${ancienStatut || 'Nouvelle'}
-Nouveau statut : ${commande.statut}
+Votre commande ${commande.numero} est maintenant : ${statut}.
+${infos.message}
+${ancienStatut ? `\nStatut précédent : ${ancienStatut}` : ''}
 Total : ${formaterPrixFCFA(commande.total)}
 
-Vous pouvez consulter vos commandes ici :
-${FRONTEND_URL}/compte.html
+Suivre ma commande : ${lienSuivi}
 
 L'équipe Hygia`;
 
-    const html = `<!DOCTYPE html>
-<html lang='fr'>
-<head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Statut commande</title></head>
-<body style='margin:0;padding:0;background:#f0f4f8;font-family: Segoe UI, Arial, sans-serif;'>
-<div style='max-width:560px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);'>
-  <div style='background:linear-gradient(135deg,#185FA5,#0e3d6e);padding:30px 28px;text-align:center;'>
-    <div style='font-size:30px;font-weight:900;color:#fff;letter-spacing:2px;'>HYGIA</div>
-    <div style='color:#a8d0f7;font-size:12px;margin-top:4px;'>MATÉRIEL MÉDICAL PROFESSIONNEL — BAMAKO</div>
-  </div>
-  <div style='padding:32px 28px;'>
-    <h2 style='color:#185FA5;margin:0 0 20px;font-size:20px;'>Mise à jour de votre commande</h2>
-    <p style='font-size:14px;color:#333;'>Bonjour <strong>${nom || 'client'}</strong>,</p>
-    <p style='font-size:14px;color:#555;'>Votre commande <strong>${commande.numero}</strong> a changé de statut.</p>
-    <div style='background:#f0f4f8;border-radius:8px;padding:16px;margin:20px 0;'>
-      <p style='margin:0 0 8px;font-size:14px;'><strong>Ancien statut :</strong> ${ancienStatut || 'Nouvelle'}</p>
-      <p style='margin:0;font-size:14px;'><strong>Nouveau statut :</strong> ${commande.statut}</p>
-      <p style='margin:8px 0 0;font-size:14px;'><strong>Total :</strong> ${formaterPrixFCFA(commande.total)}</p>
-    </div>
-    <div style='text-align:center;margin:28px 0;'>
-      <a href='${FRONTEND_URL}/compte.html' style='display:inline-block;background:#185FA5;color:#fff;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:700;'>Voir mes commandes →</a>
-    </div>
-  </div>
-  <div style='background:#f0f4f8;padding:18px 28px;text-align:center;border-top:1px solid #e8eef5;'>
-    <p style='margin:0;font-size:11px;color:#888;'>© ${new Date().getFullYear()} Hygia — Matériel médical professionnel à Bamako, Mali</p>
-  </div>
-</div>
-</body>
-</html>`;
+    const contenu = `
+        <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#185FA5;">Suivi de commande</p>
+        <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;color:#0C447C;">Commande <span style="color:${infos.couleur};">${esc(statut.toLowerCase())}</span></h1>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#44546A;">Bonjour${prenom ? ' ' + esc(prenom) : ''}, ${esc(infos.message.charAt(0).toLowerCase() + infos.message.slice(1))}</p>
+        ${infos.etape > 0 ? suiviEmailHtml(infos.etape, infos.couleur) : ''}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:#F5F9FD;border-radius:10px;">
+          <tr>
+            <td style="padding:16px 18px;font-size:13px;color:#7A8CA3;">Numéro<br><strong style="font-size:16px;color:#0C447C;letter-spacing:.5px;">${esc(commande.numero)}</strong></td>
+            <td align="right" style="padding:16px 18px;font-size:13px;color:#7A8CA3;">Total<br><strong style="font-size:16px;color:#8B2FC9;">${formaterPrixFCFA(commande.total)}</strong></td>
+          </tr>
+        </table>
+        ${boutonEmail(lienSuivi, 'Suivre ma commande')}
+        <p style="margin:28px 0 0;padding-top:20px;border-top:1px solid #E6ECF3;font-size:13px;line-height:1.6;color:#7A8CA3;">Une question sur votre commande ? <a href="${FRONTEND_URL}/contact.html" style="color:#185FA5;text-decoration:none;">Contactez-nous</a> en indiquant votre numéro de commande.</p>`;
+
+    const html = gabaritEmail({ titre: sujet, apercu: `${commande.numero} — ${infos.message}`, contenu });
 
     return envoyerEmail({ to: email, subject: sujet, text: texte, html });
 }

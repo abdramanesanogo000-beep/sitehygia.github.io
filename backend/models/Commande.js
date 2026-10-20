@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Compteur = require('./Compteur');
 
 const commandeSchema = new mongoose.Schema({
     numero: {
@@ -144,17 +145,26 @@ commandeSchema.pre('save', async function (next) {
 
     try {
         const year = new Date().getFullYear();
-        const lastCommande = await this.constructor.findOne().sort({ date: -1 });
-        let nextNumber = 1;
+        const idCompteur = `commande-${year}`;
 
-        if (lastCommande && lastCommande.numero) {
-            const match = lastCommande.numero.match(/YMS-\d{4}(\d{4})/);
-            if (match) {
-                nextNumber = parseInt(match[1], 10) + 1;
-            }
+        // Première utilisation du compteur : on repart du dernier numéro existant de l'année
+        if (!(await Compteur.exists({ _id: idCompteur }))) {
+            const derniere = await this.constructor
+                .findOne({ numero: new RegExp(`^YMS-${year}\\d+$`) })
+                .sort({ numero: -1 })
+                .select('numero');
+            const dernierNumero = derniere ? parseInt(derniere.numero.slice(8), 10) || 0 : 0;
+            await Compteur.updateOne({ _id: idCompteur }, { $max: { seq: dernierNumero } }, { upsert: true })
+                .catch(err => { if (err.code !== 11000) throw err; });
         }
 
-        this.numero = `YMS-${year}${String(nextNumber).padStart(4, '0')}`;
+        const { seq } = await Compteur.findOneAndUpdate(
+            { _id: idCompteur },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+
+        this.numero = `YMS-${year}${String(seq).padStart(4, '0')}`;
         next();
     } catch (error) {
         next(error);
