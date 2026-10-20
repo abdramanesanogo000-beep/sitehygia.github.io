@@ -1813,7 +1813,7 @@ function afficherPageProduit() {
     } else if (stock <= 5) {
         stockHtml = `<span class="pd-stock faible">${tr(`Plus que ${stock} en stock`, `Only ${stock} left`)}</span>`;
     } else {
-        stockHtml = `<span class="pd-stock dispo">${tr("En stock — expédié sous 24h", "In stock — ships within 24h")}</span>`;
+        stockHtml = `<span class="pd-stock dispo">${tr("En stock", "In stock")}</span>`;
     }
 
     const prixFormate = produit.prix.toLocaleString("fr-FR") + " FCFA";
