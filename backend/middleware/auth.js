@@ -36,4 +36,16 @@ function verifierUtilisateur(req, res, next) {
     }
 }
 
-module.exports = { signUserToken, verifierUtilisateur };
+// Retourne l'utilisateur du token s'il est valide, sinon null (sans bloquer la requête)
+function lireUtilisateurOptionnel(req) {
+    try {
+        const authHeader = req.headers.authorization || '';
+        if (!JWT_SECRET || !authHeader.startsWith('Bearer ')) return null;
+        const payload = jwt.verify(authHeader.slice(7), JWT_SECRET);
+        return payload.userId ? { _id: payload.userId, email: payload.email, nom: payload.nom } : null;
+    } catch {
+        return null;
+    }
+}
+
+module.exports = { signUserToken, verifierUtilisateur, lireUtilisateurOptionnel };

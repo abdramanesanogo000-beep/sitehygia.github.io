@@ -455,7 +455,14 @@
 
             async function verifier(tentative) {
                 try {
-                    const response = await fetch(`${BACKEND_URL}/api/paiement/statut?ref=${encodeURIComponent(ref)}`);
+                    const headers = {};
+                    const token = localStorage.getItem("hygiaAccessToken");
+                    if (token) headers["Authorization"] = `Bearer ${token}`;
+                    try {
+                        const cle = JSON.parse(localStorage.getItem("hygia-suivi") || "{}")[ref];
+                        if (cle) headers["X-Cle-Suivi"] = cle;
+                    } catch {}
+                    const response = await fetch(`${BACKEND_URL}/api/paiement/statut?ref=${encodeURIComponent(ref)}`, { headers });
                     const data = await response.json();
 
                     if (response.status === 404 || data?.statut === "Paiement échoué") {

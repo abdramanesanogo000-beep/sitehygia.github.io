@@ -107,6 +107,11 @@ const commandeSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // Clé secrète remise au client pour consulter sa commande sans compte
+    cle_suivi: {
+        type: String,
+        select: false
+    },
     notes: {
         type: String,
         default: '',

@@ -24,8 +24,8 @@ const produitsSeed = require('./data/produits');
 const crypto = require('crypto');
 const { envoyerEmailBienvenue, envoyerEmailRecapCommande, envoyerEmailReinitialisationMotDePasse, envoyerEmailNotificationStatutCommande } = require('./services/email');
 
-const { signUserToken, verifierUtilisateur } = require('./middleware/auth');
-const { signAdminToken, verifierAdmin, verifierMotDePasseAdmin, configAdminValide } = require('./middleware/adminAuth');
+const { signUserToken, verifierUtilisateur, lireUtilisateurOptionnel } = require('./middleware/auth');
+const { signAdminToken, verifierAdmin, verifierMotDePasseAdmin, verifierCodeA2F, configAdminValide } = require('./middleware/adminAuth');
 const { globalLimiter, authLimiter } = require('./middleware/rateLimit');
 
 const app = express();
@@ -116,7 +116,7 @@ if (!configAdminValide()) {
 app.use(cors({
     origin: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Cle-Suivi']
 }));
 app.use(helmet({
     crossOriginResourcePolicy: false,
@@ -280,16 +280,20 @@ app.get('/api/produits/:id', async (req, res) => {
 // Connexion admin (token JWT)
 app.post('/api/admin/connexion', authLimiter, async (req, res) => {
     try {
-        const { motdepasse } = req.body;
-        if (!motdepasse) {
-            return res.status(400).json({ succes: false, erreur: 'Mot de passe obligatoire.' });
+        const motdepasse = String(req.body.motdepasse || '');
+        const codeA2F = String(req.body.code || '');
+        if (!motdepasse || !codeA2F) {
+            return res.status(400).json({ succes: false, erreur: 'Mot de passe et code de vérification obligatoires.' });
         }
         if (!configAdminValide()) {
-            return res.status(500).json({ succes: false, erreur: 'Configuration admin incomplète.' });
+            console.error('Connexion admin bloquée : JWT_SECRET, ADMIN_PASSWORD ou ADMIN_TOTP_SECRET manquant.');
+            return res.status(503).json({ succes: false, erreur: 'Connexion admin indisponible.' });
         }
-        const valide = await verifierMotDePasseAdmin(motdepasse);
-        if (!valide) {
-            return res.status(401).json({ succes: false, erreur: 'Mot de passe incorrect.' });
+        const motDePasseValide = await verifierMotDePasseAdmin(motdepasse);
+        // Message identique dans tous les cas : on ne révèle pas lequel des deux est faux
+        if (!motDePasseValide || !verifierCodeA2F(codeA2F)) {
+            console.warn(`Échec connexion admin depuis ${req.ip}`);
+            return res.status(401).json({ succes: false, erreur: 'Identifiants ou code de vérification incorrects.' });
         }
         const token = signAdminToken();
         res.json({ succes: true, token });
@@ -746,7 +750,8 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
             modePaiement,
             statut,
             codePromoPartenaire: codePromoValide,
-            reductionPartenaire: reduction
+            reductionPartenaire: reduction,
+            cle_suivi: crypto.randomBytes(24).toString('hex')
         });
 
         await commande.save();
@@ -772,6 +777,7 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
             numero: commande.numero,
             total: commande.total,
             statut: commande.statut,
+            cle_suivi: commande.cle_suivi,
             message: `Commande ${commande.numero} enregistrée.`
         });
     } catch (error) {
@@ -1663,19 +1669,58 @@ app.post('/api/paiement/jemeni-webhook', async (req, res) => {
 });
 */
 
+// Accès à une commande : soit le client connecté propriétaire (même email),
+// soit la clé de suivi secrète remise au moment de la commande (en-tête X-Cle-Suivi)
+function peutConsulterCommande(req, commande) {
+    const utilisateur = lireUtilisateurOptionnel(req);
+    if (utilisateur?.email && commande.client?.email &&
+        utilisateur.email.toLowerCase().trim() === commande.client.email.toLowerCase().trim()) {
+        return true;
+    }
+
+    const cle = String(req.headers['x-cle-suivi'] || '');
+    if (!commande.cle_suivi || cle.length !== commande.cle_suivi.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(cle), Buffer.from(commande.cle_suivi));
+}
+
+function commandePublique(commande) {
+    return {
+        numero: commande.numero,
+        date: commande.date,
+        statut: commande.statut,
+        paiement_confirme: commande.paiement_confirme,
+        modePaiement: commande.modePaiement,
+        articles: commande.articles,
+        total: commande.total,
+        fraisLivraison: commande.fraisLivraison,
+        reductionPartenaire: commande.reductionPartenaire,
+        client: {
+            nom: commande.client?.nom || '',
+            telephone: commande.client?.telephone || '',
+            adresse: commande.client?.adresse || '',
+            commune: commande.client?.commune || ''
+        }
+    };
+}
+
 // Vérifier le statut d'un paiement (appelé depuis commande-confirmee.html)
 app.get('/api/paiement/statut', async (req, res) => {
     try {
-        const ref = req.query.ref;
+        const ref = String(req.query.ref || '');
 
         if (!ref) {
             return res.status(400).json({ erreur: 'Référence manquante.' });
         }
 
-        const commande = await Commande.findOne({ numero: ref });
+        const commande = await Commande.findOne({ numero: ref }).select('+cle_suivi');
 
         if (!commande) {
             return res.status(404).json({ erreur: 'Commande introuvable' });
+        }
+
+        // Sans preuve d'accès : uniquement le statut, aucune donnée personnelle
+        if (!peutConsulterCommande(req, commande)) {
+            return res.json({ statut: commande.statut, numero: commande.numero });
         }
 
         return res.json({
@@ -1692,16 +1737,17 @@ app.get('/api/paiement/statut', async (req, res) => {
     }
 });
 
-// Récupérer le détail d'une commande par son numéro (pour la page de détail)
+// Détail d'une commande (client propriétaire ou porteur de la clé de suivi uniquement)
 app.get('/api/commandes/:numero', async (req, res) => {
     try {
-        const commande = await Commande.findOne({ numero: req.params.numero });
+        const commande = await Commande.findOne({ numero: String(req.params.numero) }).select('+cle_suivi');
 
-        if (!commande) {
+        // Même réponse que la commande existe ou non, pour ne rien révéler
+        if (!commande || !peutConsulterCommande(req, commande)) {
             return res.status(404).json({ erreur: 'Commande introuvable' });
         }
 
-        return res.json(commande);
+        return res.json(commandePublique(commande));
     } catch (error) {
         console.error('Erreur GET /api/commandes/:numero :', error);
         return res.status(500).json({ erreur: 'Erreur serveur.' });

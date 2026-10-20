@@ -28,6 +28,23 @@ BACKEND_URL=https://ton-url-render.onrender.com
 exister dans les variables d'environnement de Render (ou dans un fichier `.env`
 local non versionné).
 
+## A2F de l'administrateur (obligatoire)
+
+La connexion admin exige le mot de passe **et** un code à 6 chiffres d'une application
+d'authentification (Google Authenticator, Microsoft Authenticator…). Sans la variable
+`ADMIN_TOTP_SECRET`, la connexion admin est bloquée.
+
+1. En local, dans `backend/` : `node scripts/generer-secret-a2f.js`
+2. Dans l'application du téléphone : « Saisir une clé de configuration », coller le secret, type « basé sur le temps »
+3. Dans Render : ajouter `ADMIN_TOTP_SECRET=<secret>` et `JWT_SECRET` (longue valeur aléatoire)
+4. Ne jamais committer ni partager ce secret. En cas de perte du téléphone, régénérer un secret et remplacer la variable.
+
+## Confidentialité des commandes
+
+`GET /api/commandes/:numero` ne répond qu'au client connecté propriétaire de la commande
+(même email) ou au navigateur qui possède la clé de suivi secrète (`cle_suivi`, en-tête `X-Cle-Suivi`)
+remise lors de la création de la commande. `GET /api/paiement/statut` sans preuve d'accès ne renvoie que le statut.
+
 ## Commandes Render
 
 - **Build command** : `npm install`

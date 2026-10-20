@@ -1692,6 +1692,7 @@ async function confirmerCommande(methode) {
         if (!numeroCommande) {
             throw new Error("Numéro de commande non reçu");
         }
+        memoriserCleSuivi(numeroCommande, data.cle_suivi);
 
         // Le code promo/créateur a été utilisé pour cette commande : on le vide
         if (totals.couponApplied) {
@@ -2081,6 +2082,21 @@ function getAccessToken() {
 function setAccessToken(token) {
     if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
     else localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+// Clés de suivi des commandes passées depuis ce navigateur (permettent de consulter
+// une commande sans compte). Lues aussi par commande-confirmee.html et commande-detail.html.
+const CLES_SUIVI_KEY = "hygia-suivi";
+
+function memoriserCleSuivi(numero, cle) {
+    if (!numero || !cle) return;
+    try {
+        const cles = JSON.parse(localStorage.getItem(CLES_SUIVI_KEY) || "{}");
+        cles[numero] = cle;
+        const numeros = Object.keys(cles);
+        if (numeros.length > 50) numeros.slice(0, numeros.length - 50).forEach(n => delete cles[n]);
+        localStorage.setItem(CLES_SUIVI_KEY, JSON.stringify(cles));
+    } catch (e) { console.error("memoriserCleSuivi:", e); }
 }
 
 function getUtilisateurConnecte() {

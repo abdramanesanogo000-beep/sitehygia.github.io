@@ -355,7 +355,22 @@
         async function chargerDetailCommande(numero) {
             try {
                 const BACKEND_URL = 'https://hygia-backend.onrender.com';
-                const response = await fetch(`${BACKEND_URL}/api/commandes/${numero}`);
+                // Preuve d'accès : session client et/ou clé de suivi mémorisée à la commande
+                const headers = {};
+                const token = localStorage.getItem('hygiaAccessToken');
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                try {
+                    const cle = JSON.parse(localStorage.getItem('hygia-suivi') || '{}')[numero];
+                    if (cle) headers['X-Cle-Suivi'] = cle;
+                } catch {}
+
+                const response = await fetch(`${BACKEND_URL}/api/commandes/${encodeURIComponent(numero)}`, { headers });
+                if (response.status === 404) {
+                    document.getElementById('cmd-numero').textContent = token
+                        ? 'Commande introuvable sur votre compte'
+                        : 'Connectez-vous à votre compte pour suivre cette commande';
+                    return;
+                }
                 const commande = await response.json();
 
                 if (commande && commande.numero) {

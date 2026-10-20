@@ -531,7 +531,9 @@
                 <div id="login-msg" class="auth-message"></div>
                 <form id="form-login" class="auth-form">
                     <label>Mot de passe</label>
-                    <input type="password" id="admin-pwd" placeholder="Mot de passe administrateur" required>
+                    <input type="password" id="admin-pwd" placeholder="Mot de passe administrateur" autocomplete="current-password" required>
+                    <label for="admin-code">Code de vérification (application d'authentification)</label>
+                    <input type="text" id="admin-code" placeholder="123456" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
                     <button type="submit">Accéder au panel</button>
                 </form>
             </div>
@@ -918,20 +920,23 @@
         document.getElementById("form-login").addEventListener("submit", async (e) => {
             e.preventDefault();
             const password = document.getElementById("admin-pwd").value;
+            const codeInput = document.getElementById("admin-code");
+            const code = codeInput.value.replace(/\s/g, "");
             showSyphaLoader("Connexion admin...");
 
             try {
                 const res = await fetch(`${API}/api/admin/connexion`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ motdepasse: password })
+                    body: JSON.stringify({ motdepasse: password, code })
                 });
 
                 const data = await res.json();
 
                 if (!res.ok || !data.succes || !data.token) {
                     hideSyphaLoader();
-                    showMsg(data.erreur || "Mot de passe incorrect.", "error");
+                    codeInput.value = "";
+                    showMsg(data.erreur || "Identifiants ou code de vérification incorrects.", "error");
                     return;
                 }
 
@@ -988,6 +993,7 @@
             document.getElementById("login-screen").style.display = "block";
             document.getElementById("admin-panel").style.display = "none";
             document.getElementById("admin-pwd").value = "";
+            document.getElementById("admin-code").value = "";
         }
 
         // ONGLETS PRINCIPAUX
