@@ -378,6 +378,9 @@
         const API = "https://hygia-backend.onrender.com";
         let adminToken = localStorage.getItem("adminToken") || "";
         let commandes = [];
+        // Anciens statuts rattachés à leur équivalent actuel (même logique que le tableau de bord)
+        const STATUT_EQUIVALENT = { "En attente paiement": "En attente", "Payé non livré": "Confirmée", "Payé livré": "Livrée", "Paiement échoué": "Annulée" };
+        const statutAffiche = (s) => STATUT_EQUIVALENT[s] || s || "En attente";
         let numeroCourant = "";
         let pageActuelle = 1;
         const itemsParPage = 20;
@@ -433,7 +436,7 @@
             const tbody = document.getElementById("tbody-commandes");
             
             // Filtrer
-            let listeFiltree = filtreActuel === "Toutes" ? commandes : commandes.filter(c => c.statut === filtreActuel);
+            let listeFiltree = filtreActuel === "Toutes" ? commandes : commandes.filter(c => statutAffiche(c.statut) === filtreActuel);
             
             if (!listeFiltree.length) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:#888;">Aucune commande.</td></tr>`;
@@ -459,7 +462,7 @@
             tbody.innerHTML = "";
             pageData.forEach(cmd => {
                 const date = new Date(cmd.date).toLocaleDateString("fr-FR");
-                const cls = classesStatut[cmd.statut] || "attente";
+                const cls = classesStatut[statutAffiche(cmd.statut)] || "attente";
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
             <td><strong>${cmd.numero}</strong></td>
@@ -468,7 +471,7 @@
             <td>${cmd.client.telephone}</td>
             <td><strong>${cmd.total.toLocaleString()} F</strong></td>
             <td>${cmd.modePaiement}</td>
-            <td><span class="statut-badge ${cls}">${cmd.statut}</span></td>
+            <td><span class="statut-badge ${cls}">${statutAffiche(cmd.statut)}</span></td>
             <td><button class="btn-gerer" onclick="ouvrirModal('${cmd.numero}')">Gérer</button></td>
         `;
                 tbody.appendChild(tr);
@@ -540,7 +543,7 @@
         <div class="total-commande">Total : ${cmd.total.toLocaleString()} FCFA</div>
     `;
 
-            document.getElementById("modal-statut").value = cmd.statut;
+            document.getElementById("modal-statut").value = statutAffiche(cmd.statut);
             document.getElementById("modal-notes").value = cmd.notes || "";
             document.getElementById("modal-cmd").classList.add("active");
         }
@@ -573,11 +576,12 @@
 
             const statutCouleurs = {
                 'En attente': { bg: '#fff3cd', color: '#856404' },
-                'Payé non livré': { bg: '#d6eaf8', color: '#1a5276' },
-                'Payé livré': { bg: '#e8f8f5', color: '#117864' },
+                'Confirmée': { bg: '#d1ecf1', color: '#0c5460' },
+                'En livraison': { bg: '#d6eaf8', color: '#1a5276' },
+                'Livrée': { bg: '#e8f8f5', color: '#117864' },
                 'Annulée': { bg: '#fadbd8', color: '#922b21' }
             };
-            const sc = statutCouleurs[cmd.statut] || { bg: '#eee', color: '#333' };
+            const sc = statutCouleurs[statutAffiche(cmd.statut)] || { bg: '#eee', color: '#333' };
 
             const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -615,7 +619,7 @@
       <tr>
         <td style="padding:5px 0;font-size:12px;color:#666;">Statut</td>
         <td style="padding:5px 0;text-align:right;">
-          <span style="background:${sc.bg};color:${sc.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${cmd.statut}</span>
+          <span style="background:${sc.bg};color:${sc.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${statutAffiche(cmd.statut)}</span>
         </td>
       </tr>
     </table>

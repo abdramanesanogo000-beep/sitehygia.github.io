@@ -113,11 +113,17 @@
             color: #d68910;
         }
 
-        .statut-badge.paye-non-livre {
+        .statut-badge.confirmee {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .statut-badge.en-livraison {
             background: #d6eaf8;
             color: #1a5276;
         }
 
+        .statut-badge.livree,
         .statut-badge.paye-livre {
             background: #e8f8f5;
             color: #117864;
@@ -574,13 +580,17 @@
                     <div class="stat-value" id="s-attente">—</div>
                     <div class="stat-label">En attente</div>
                 </div>
+                <div class="stat-card" style="border-top: 3px solid #0c5460;">
+                    <div class="stat-value" id="s-confirmees" style="color:#0c5460;">—</div>
+                    <div class="stat-label">Confirmées</div>
+                </div>
                 <div class="stat-card" style="border-top: 3px solid #1a5276;">
-                    <div class="stat-value" id="s-paye-non-livre" style="color:#1a5276;">—</div>
-                    <div class="stat-label">Payé non livré</div>
+                    <div class="stat-value" id="s-en-livraison" style="color:#1a5276;">—</div>
+                    <div class="stat-label">En livraison</div>
                 </div>
                 <div class="stat-card green">
                     <div class="stat-value" id="s-livrees">—</div>
-                    <div class="stat-label">Payé livré</div>
+                    <div class="stat-label">Livrées</div>
                 </div>
                 <div class="stat-card red">
                     <div class="stat-value" id="s-annulees">—</div>
@@ -595,8 +605,9 @@
             <div class="filtres-admin">
                 <button class="filtre-btn active" onclick="filtrer('Toutes', this)">Toutes</button>
                 <button class="filtre-btn" onclick="filtrer('En attente', this)">En attente</button>
-                <button class="filtre-btn" onclick="filtrer('Payé non livré', this)">Payé non livré</button>
-                <button class="filtre-btn" onclick="filtrer('Payé livré', this)">Payé livré</button>
+                <button class="filtre-btn" onclick="filtrer('Confirmée', this)">Confirmée</button>
+                <button class="filtre-btn" onclick="filtrer('En livraison', this)">En livraison</button>
+                <button class="filtre-btn" onclick="filtrer('Livrée', this)">Livrée</button>
                 <button class="filtre-btn" onclick="filtrer('Annulée', this)">Annulées</button>
                 <button class="filtre-btn" style="background: #0C447C; color: #fff; border-color: #0C447C;" onclick="window.location.href='admin-commandes.html'">📋 Voir toutes les commandes</button>
             </div>
@@ -867,8 +878,9 @@
             <div style="margin:12px 0 5px; font-weight:bold; color:#0C447C; font-size:13px;">Changer le statut :</div>
             <select class="select-statut" id="modal-statut">
                 <option value="En attente">En attente</option>
-                <option value="Payé non livré">Payé non livré</option>
-                <option value="Payé livré">Payé livré</option>
+                <option value="Confirmée">Confirmée</option>
+                <option value="En livraison">En livraison</option>
+                <option value="Livrée">Livrée</option>
                 <option value="Annulée">Annulée</option>
             </select>
             <textarea class="textarea-notes" id="modal-notes" placeholder="Notes internes (optionnel)..."></textarea>
@@ -945,10 +957,6 @@
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
 
-                const statsRes = await fetch(`${API}/api/admin/stats`, {
-                    headers: { "Authorization": `Bearer ${adminToken}` }
-                });
-                afficherStats(await statsRes.json());
                 chargerCommandes();
                 chargerProduits();
             } catch {
@@ -1008,13 +1016,27 @@
         }
 
         // STATS
-        function afficherStats(s) {
-            document.getElementById("s-total").textContent = s.totalCommandes;
-            document.getElementById("s-attente").textContent = s.enAttente;
-            document.getElementById("s-paye-non-livre").textContent = s.payeNonLivre || 0;
-            document.getElementById("s-livrees").textContent = s.livrees;
-            document.getElementById("s-annulees").textContent = s.annulees || 0;
-            document.getElementById("s-ca").textContent = (s.chiffreAffaires || 0).toLocaleString() + " F";
+        // Statuts identiques à la page « Toutes les commandes ».
+        // Les anciens statuts sont rattachés à leur équivalent actuel.
+        const STATUT_EQUIVALENT = {
+            "En attente paiement": "En attente",
+            "Payé non livré": "Confirmée",
+            "Payé livré": "Livrée",
+            "Paiement échoué": "Annulée"
+        };
+        const statutAffiche = (s) => STATUT_EQUIVALENT[s] || s || "En attente";
+
+        // Les compteurs sont calculés à partir de la liste des commandes (même logique que le tableau)
+        function afficherStats() {
+            const compter = (statut) => commandes.filter(c => statutAffiche(c.statut) === statut).length;
+            const ca = commandes.filter(c => statutAffiche(c.statut) === "Livrée").reduce((s, c) => s + (c.total || 0), 0);
+            document.getElementById("s-total").textContent = commandes.length;
+            document.getElementById("s-attente").textContent = compter("En attente");
+            document.getElementById("s-confirmees").textContent = compter("Confirmée");
+            document.getElementById("s-en-livraison").textContent = compter("En livraison");
+            document.getElementById("s-livrees").textContent = compter("Livrée");
+            document.getElementById("s-annulees").textContent = compter("Annulée");
+            document.getElementById("s-ca").textContent = ca.toLocaleString() + " F";
         }
 
         // CHARGER COMMANDES
@@ -1026,6 +1048,7 @@
                 });
                 commandes = await res.json();
                 afficherCommandes(commandes);
+                afficherStats();
                 calculerStatsAvancees(commandes);
             } catch {
                 document.getElementById("tbody-commandes").innerHTML =
@@ -1084,7 +1107,7 @@
             document.getElementById("panier-moyen").textContent = panierMoyen.toLocaleString() + " F";
 
             // Taux de conversion (commandes payées / total)
-            const commandesPayees = commandes.filter(c => c.statut === "Payé non livré" || c.statut === "Payé livré");
+            const commandesPayees = commandes.filter(c => ["Confirmée", "En livraison", "Livrée"].includes(statutAffiche(c.statut)));
             const tauxConversion = commandes.length > 0 ? (commandesPayees.length / commandes.length) * 100 : 0;
             document.getElementById("taux-conversion").textContent = tauxConversion.toFixed(1) + " %";
 
@@ -1109,7 +1132,7 @@
                 document.getElementById("paiement-prefere-pct").textContent = pctPaiement.toFixed(1) + " % des commandes";
             }
 
-            // Commandes ce mois (CA = uniquement Payé livré)
+            // Commandes ce mois (CA = uniquement les commandes livrées)
             const maintenant = new Date();
             const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
             const commandesMois = commandes.filter(c => {
@@ -1118,7 +1141,7 @@
             });
             const caMois = commandes.filter(c => {
                 const dateCmd = new Date(c.date);
-                return dateCmd >= debutMois && c.statut === "Payé livré";
+                return dateCmd >= debutMois && statutAffiche(c.statut) === "Livrée";
             }).reduce((sum, c) => sum + c.total, 0);
             document.getElementById("cmd-mois").textContent = commandesMois.length;
             document.getElementById("ca-mois").textContent = caMois.toLocaleString() + " F ce mois";
@@ -1139,8 +1162,9 @@
 
             const classesStatut = {
                 "En attente": "attente",
-                "Payé non livré": "paye-non-livre",
-                "Payé livré": "paye-livre",
+                "Confirmée": "confirmee",
+                "En livraison": "en-livraison",
+                "Livrée": "livree",
                 "Annulée": "annulee"
             };
 
@@ -1150,7 +1174,7 @@
             tbody.innerHTML = "";
             listeLimitee.forEach(cmd => {
                 const date = new Date(cmd.date).toLocaleDateString("fr-FR");
-                const cls = classesStatut[cmd.statut] || "attente";
+                const cls = classesStatut[statutAffiche(cmd.statut)] || "attente";
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
             <td><strong>${cmd.numero}</strong></td>
@@ -1159,7 +1183,7 @@
             <td>${cmd.client.telephone}</td>
             <td><strong>${cmd.total.toLocaleString()} F</strong></td>
             <td>${cmd.modePaiement}</td>
-            <td><span class="statut-badge ${cls}">${cmd.statut}</span></td>
+            <td><span class="statut-badge ${cls}">${statutAffiche(cmd.statut)}</span></td>
             <td><button class="btn-gerer" onclick="ouvrirModal('${cmd.numero}')">Gérer</button></td>
         `;
                 tbody.appendChild(tr);
@@ -1177,7 +1201,7 @@
         function filtrer(statut, btn) {
             document.querySelectorAll(".filtre-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            afficherCommandes(statut === "Toutes" ? commandes : commandes.filter(c => c.statut === statut));
+            afficherCommandes(statut === "Toutes" ? commandes : commandes.filter(c => statutAffiche(c.statut) === statut));
         }
 
         // MODAL
@@ -1205,7 +1229,7 @@
         <div class="total-commande">Total : ${cmd.total.toLocaleString()} FCFA</div>
     `;
 
-            document.getElementById("modal-statut").value = cmd.statut;
+            document.getElementById("modal-statut").value = statutAffiche(cmd.statut);
             document.getElementById("modal-notes").value = cmd.notes || "";
             document.getElementById("modal-cmd").classList.add("active");
         }
@@ -1238,11 +1262,12 @@
 
             const statutCouleurs = {
                 'En attente': { bg: '#fff3cd', color: '#856404' },
-                'Payé non livré': { bg: '#d6eaf8', color: '#1a5276' },
-                'Payé livré': { bg: '#e8f8f5', color: '#117864' },
+                'Confirmée': { bg: '#d1ecf1', color: '#0c5460' },
+                'En livraison': { bg: '#d6eaf8', color: '#1a5276' },
+                'Livrée': { bg: '#e8f8f5', color: '#117864' },
                 'Annulée': { bg: '#fadbd8', color: '#922b21' }
             };
-            const sc = statutCouleurs[cmd.statut] || { bg: '#eee', color: '#333' };
+            const sc = statutCouleurs[statutAffiche(cmd.statut)] || { bg: '#eee', color: '#333' };
 
             const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -1278,7 +1303,7 @@
       <tr>
         <td style="padding:5px 0;font-size:12px;color:#666;">Statut</td>
         <td style="padding:5px 0;text-align:right;">
-          <span style="background:${sc.bg};color:${sc.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${cmd.statut}</span>
+          <span style="background:${sc.bg};color:${sc.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${statutAffiche(cmd.statut)}</span>
         </td>
       </tr>
     </table>
@@ -1342,10 +1367,9 @@
                 if (res.ok) {
                     fermerModal();
                     await chargerCommandes();
-                    const statsRes = await fetch(`${API}/api/admin/stats`, { headers: { "Authorization": `Bearer ${adminToken}` } });
-                    afficherStats(await statsRes.json());
                 } else {
-                    alert("Erreur lors de la sauvegarde.");
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.erreur || "Erreur lors de la sauvegarde.");
                 }
             } catch {
                 alert("Impossible de joindre le serveur.");
