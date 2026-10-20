@@ -40,53 +40,100 @@ async function envoyerEmail(options) {
     }
 }
 
+// Échappe les données saisies par le client avant de les insérer dans le HTML
+function esc(valeur) {
+    return String(valeur ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+const POLICE = "'Segoe UI',Helvetica,Arial,sans-serif";
+
+// Gabarit commun : mise en page en tableaux (compatible Gmail, Outlook, mobile)
+function gabaritEmail({ titre, apercu, contenu }) {
+    return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(titre)}</title>
+</head>
+<body style="margin:0;padding:0;background:#F2F6FB;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(apercu)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F2F6FB;">
+  <tr><td align="center" style="padding:32px 12px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
+      <tr><td style="padding:0 4px 18px;font-family:${POLICE};">
+        <span style="font-size:22px;font-weight:800;letter-spacing:3px;color:#0C447C;">HYGIA</span>
+        <span style="font-size:12px;color:#7A8CA3;padding-left:8px;">Matériel médical professionnel</span>
+      </td></tr>
+      <tr><td style="background:#FFFFFF;border-radius:14px;border-top:4px solid #185FA5;padding:36px 32px;font-family:${POLICE};color:#1F2D3D;">
+        ${contenu}
+      </td></tr>
+      <tr><td style="padding:22px 8px 0;text-align:center;font-family:${POLICE};font-size:12px;line-height:1.6;color:#8A9AB0;">
+        Hygia — Bamako, Mali<br>
+        <a href="${FRONTEND_URL}" style="color:#185FA5;text-decoration:none;">Visiter la boutique</a>
+        &nbsp;·&nbsp;
+        <a href="${FRONTEND_URL}/contact.html" style="color:#185FA5;text-decoration:none;">Nous contacter</a><br>
+        Vous recevez cet email suite à une action sur votre compte ou une commande Hygia.
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
+function boutonEmail(lien, libelle) {
+    return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0 4px;"><tr>
+      <td style="background:#185FA5;border-radius:8px;">
+        <a href="${lien}" style="display:inline-block;padding:14px 30px;font-family:${POLICE};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;">${libelle}</a>
+      </td></tr></table>`;
+}
+
 async function envoyerEmailBienvenue(utilisateur) {
     const { nom, email } = utilisateur;
+    const prenom = String(nom || '').trim().split(/\s+/)[0] || 'et bienvenue';
 
-    const sujet = 'Bienvenue sur Hygia — Votre compte est créé';
+    const sujet = 'Votre compte Hygia est prêt';
 
-    const texte = `Bonjour ${nom},
+    const texte = `Bonjour ${prenom},
 
-Bienvenue sur Hygia, votre plateforme de matériel médical en ligne.
+Votre compte Hygia a bien été créé.
 
-Votre compte a été créé avec succès. Vous pouvez dès maintenant :
-- Parcourir notre catalogue de matériel médical
-- Passer vos commandes en ligne
-- Suivre vos commandes depuis votre espace client
+Avec votre compte, vous pouvez :
+- commander plus rapidement, vos coordonnées sont mémorisées ;
+- suivre chaque commande, de la confirmation à la livraison ;
+- cumuler des points fidélité à chaque achat.
 
 Identifiant : ${email}
 
-À très bientôt sur Hygia !
-${FRONTEND_URL}`;
+Découvrir le catalogue : ${FRONTEND_URL}/catalogue.html
 
-    const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <div style="background: #185FA5; padding: 24px; text-align: center;">
-                <h1 style="color: #fff; margin: 0; font-size: 24px;">Bienvenue sur Hygia</h1>
-            </div>
-            <div style="padding: 24px; border: 1px solid #eee; border-top: none;">
-                <p>Bonjour <strong>${nom}</strong>,</p>
-                <p>Votre compte Hygia a été créé avec succès.</p>
-                <p>Vous pouvez dès maintenant :</p>
-                <ul>
-                    <li>Parcourir notre catalogue de matériel médical</li>
-                    <li>Passer vos commandes en ligne</li>
-                    <li>Suivre vos commandes depuis votre espace client</li>
-                </ul>
-                <p><strong>Identifiant :</strong> ${email}</p>
-                <a href="${FRONTEND_URL}/connexion.html" style="display: inline-block; background: #185FA5; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 16px;">Se connecter</a>
-            </div>
-            <div style="padding: 16px; text-align: center; color: #888; font-size: 12px;">
-                © 2026 Hygia — Matériel médical à Bamako
-            </div>
-        </div>
-    `;
+L'équipe Hygia`;
+
+    const avantage = (titre, detail) => `
+      <tr>
+        <td width="14" valign="top" style="padding:6px 0;"><div style="width:8px;height:8px;border-radius:50%;background:#FFC94A;margin-top:6px;"></div></td>
+        <td style="padding:6px 0 6px 10px;font-size:14px;line-height:1.55;color:#44546A;"><strong style="color:#1F2D3D;">${titre}</strong><br>${detail}</td>
+      </tr>`;
+
+    const contenu = `
+        <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;color:#0C447C;">Bienvenue, ${esc(prenom)}</h1>
+        <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#44546A;">Votre compte Hygia a bien été créé. Vous avez désormais accès à notre catalogue de matériel médical et à votre espace client.</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${avantage('Commande rapide', 'Vos coordonnées sont mémorisées pour vos prochains achats.')}
+          ${avantage('Suivi en temps réel', 'Suivez chaque commande, de la confirmation à la livraison.')}
+          ${avantage('Points fidélité', 'Chaque achat vous rapporte des points.')}
+        </table>
+        ${boutonEmail(`${FRONTEND_URL}/catalogue.html`, 'Découvrir le catalogue')}
+        <p style="margin:28px 0 0;padding-top:20px;border-top:1px solid #E6ECF3;font-size:13px;line-height:1.6;color:#7A8CA3;">Identifiant de connexion : <strong style="color:#1F2D3D;">${esc(email)}</strong><br>Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement cet email.</p>`;
+
+    const html = gabaritEmail({ titre: sujet, apercu: 'Votre compte est prêt. Commandez et suivez vos livraisons en toute simplicité.', contenu });
 
     return envoyerEmail({ to: email, subject: sujet, text: texte, html });
 }
 
 async function envoyerEmailRecapCommande(commande) {
-    const { client, numero, articles, total, modePaiement, date, statut } = commande;
+    const { client, numero, articles, total, modePaiement, date } = commande;
     const email = client?.email;
 
     if (!email) {
@@ -94,142 +141,106 @@ async function envoyerEmailRecapCommande(commande) {
         return { succes: false, raison: 'Email client manquant' };
     }
 
-    const sujet = `Reçu de commande Hygia — ${numero}`;
+    const estLivraison = String(modePaiement || '').toLowerCase().includes('livraison');
+    const fraisLivraison = Number(commande.fraisLivraison) || 0;
+    const reduction = Number(commande.reductionPartenaire) || 0;
+    const sousTotal = articles.reduce((s, a) => s + (a.sousTotal || a.prix * a.quantite), 0);
+    const lienSuivi = `${FRONTEND_URL}/commande-detail.html?numero=${encodeURIComponent(numero)}`;
+    const libellePaiement = estLivraison ? 'Paiement à la livraison' : `Paiement en ligne (${modePaiement})`;
+    const messagePaiement = estLivraison
+        ? `Préparez ${formaterPrixFCFA(total)} pour le livreur à la réception.`
+        : 'Votre commande sera préparée dès la confirmation de votre paiement.';
 
-    const dateFormatee = new Date(date).toLocaleString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    // L'email part à la création de la commande, avant un éventuel paiement en ligne : on parle de commande « reçue »
+    const sujet = `Commande ${numero} reçue — Hygia`;
+
+    const dateFormatee = new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const prenom = String(client.nom || '').trim().split(/\s+/)[0];
 
     const lignes = articles.map(a =>
         `- ${a.nom} x${a.quantite} : ${formaterPrixFCFA(a.sousTotal || a.prix * a.quantite)}`
     ).join('\n');
 
-    const texte = `Bonjour ${client.nom},
+    const texte = `Bonjour ${prenom},
 
-Merci pour votre commande sur Hygia. Voici votre reçu.
+Merci pour votre commande. Nous l'avons bien reçue.
 
-=== RECU DE COMMANDE ===
-Numéro    : ${numero}
-Date      : ${dateFormatee}
-Paiement  : ${modePaiement}
-Statut    : ${statut || 'En attente'}
+Commande : ${numero}
+Date     : ${dateFormatee}
+Paiement : ${libellePaiement}
 
-Articles :
 ${lignes}
 
-TOTAL : ${formaterPrixFCFA(total)}
+Sous-total : ${formaterPrixFCFA(sousTotal)}${reduction ? `\nRéduction  : -${formaterPrixFCFA(reduction)}` : ''}
+Livraison  : ${fraisLivraison ? formaterPrixFCFA(fraisLivraison) : 'Offerte'}
+Total      : ${formaterPrixFCFA(total)}
 
-Livraison :
-${client.adresse}
-Tél : ${client.telephone}
+${messagePaiement}
 
-Votre commande sera traitée dans les meilleurs délais.
-Suivi : ${FRONTEND_URL}/compte.html
+Livraison à :
+${client.nom}
+${client.adresse}${client.commune ? ', ' + client.commune : ''}
+${client.telephone}
+
+Suivre ma commande : ${lienSuivi}
 
 L'équipe Hygia`;
 
+    const ligneMontant = (libelle, valeur, couleur = '#44546A') => `
+      <tr>
+        <td style="padding:5px 0;font-size:14px;color:#7A8CA3;">${libelle}</td>
+        <td align="right" style="padding:5px 0;font-size:14px;color:${couleur};">${valeur}</td>
+      </tr>`;
+
     const lignesHtml = articles.map(a => `
-        <tr>
-            <td style="padding:10px 12px;border-bottom:1px solid #e8eef5;font-size:14px;">${a.nom}</td>
-            <td style="padding:10px 12px;border-bottom:1px solid #e8eef5;text-align:center;font-size:14px;">${a.quantite}</td>
-            <td style="padding:10px 12px;border-bottom:1px solid #e8eef5;text-align:right;font-size:14px;font-weight:600;color:#185FA5;">${formaterPrixFCFA(a.sousTotal || a.prix * a.quantite)}</td>
-        </tr>
-    `).join('');
-
-    const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reçu ${numero}</title>
-</head>
-<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;">
-<div style="max-width:620px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
-
-  <!-- En-tête -->
-  <div style="background:linear-gradient(135deg,#185FA5,#0e3d6e);padding:32px 28px;text-align:center;">
-    <div style="font-size:32px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:4px;">HYGIA</div>
-    <div style="color:#a8d0f7;font-size:13px;letter-spacing:1px;">MATÉRIEL MÉDICAL PROFESSIONNEL — BAMAKO</div>
-    <div style="margin-top:20px;background:rgba(255,255,255,0.15);border-radius:8px;padding:12px 20px;display:inline-block;">
-      <div style="color:#fff;font-size:11px;letter-spacing:1px;margin-bottom:4px;">REÇU DE COMMANDE</div>
-      <div style="color:#fff;font-size:22px;font-weight:700;letter-spacing:2px;">${numero}</div>
-    </div>
-  </div>
-
-  <!-- Infos commande -->
-  <div style="padding:24px 28px;background:#f8fbff;border-bottom:1px solid #e8eef5;">
-    <table style="width:100%;border-collapse:collapse;">
       <tr>
-        <td style="padding:6px 0;font-size:13px;color:#666;">Date</td>
-        <td style="padding:6px 0;font-size:13px;color:#222;text-align:right;font-weight:600;">${dateFormatee}</td>
-      </tr>
-      <tr>
-        <td style="padding:6px 0;font-size:13px;color:#666;">Mode de paiement</td>
-        <td style="padding:6px 0;font-size:13px;color:#222;text-align:right;font-weight:600;">${modePaiement}</td>
-      </tr>
-      <tr>
-        <td style="padding:6px 0;font-size:13px;color:#666;">Statut</td>
-        <td style="padding:6px 0;text-align:right;">
-          <span style="background:#fff3cd;color:#856404;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;">${statut || 'En attente'}</span>
+        <td style="padding:14px 0;border-bottom:1px solid #E6ECF3;font-size:14px;line-height:1.45;color:#1F2D3D;">
+          ${esc(a.nom)}<br><span style="font-size:13px;color:#7A8CA3;">Quantité : ${Number(a.quantite)}</span>
         </td>
-      </tr>
-    </table>
-  </div>
+        <td align="right" valign="top" style="padding:14px 0 14px 12px;border-bottom:1px solid #E6ECF3;font-size:14px;font-weight:600;color:#1F2D3D;white-space:nowrap;">${formaterPrixFCFA(a.sousTotal || a.prix * a.quantite)}</td>
+      </tr>`).join('');
 
-  <!-- Corps -->
-  <div style="padding:28px;">
-    <p style="margin:0 0 8px;font-size:15px;color:#333;">Bonjour <strong>${client.nom}</strong>,</p>
-    <p style="margin:0 0 24px;font-size:14px;color:#555;">Merci pour votre commande sur <strong>Hygia</strong>. Voici votre reçu détaillé.</p>
+    const contenu = `
+        <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#185FA5;">Commande reçue</p>
+        <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;color:#0C447C;">Merci${prenom ? ', ' + esc(prenom) : ''}</h1>
+        <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#44546A;">Nous avons bien reçu votre commande. Vous serez informé par email à chaque étape de sa préparation et de sa livraison.</p>
 
-    <!-- Articles -->
-    <div style="font-size:12px;font-weight:700;color:#185FA5;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Articles commandés</div>
-    <table style="width:100%;border-collapse:collapse;border:1px solid #e8eef5;border-radius:8px;overflow:hidden;">
-      <thead>
-        <tr style="background:#185FA5;">
-          <th style="padding:10px 12px;text-align:left;font-size:12px;color:#fff;font-weight:600;">Produit</th>
-          <th style="padding:10px 12px;text-align:center;font-size:12px;color:#fff;font-weight:600;">Qté</th>
-          <th style="padding:10px 12px;text-align:right;font-size:12px;color:#fff;font-weight:600;">Montant</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${lignesHtml}
-      </tbody>
-    </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F9FD;border-radius:10px;">
+          <tr>
+            <td style="padding:16px 18px;font-size:13px;color:#7A8CA3;">Numéro<br><strong style="font-size:16px;color:#0C447C;letter-spacing:.5px;">${esc(numero)}</strong></td>
+            <td align="right" style="padding:16px 18px;font-size:13px;color:#7A8CA3;">Date<br><strong style="font-size:14px;color:#1F2D3D;">${dateFormatee}</strong></td>
+          </tr>
+        </table>
 
-    <!-- Total -->
-    <div style="margin-top:16px;background:#185FA5;border-radius:8px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="color:#a8d0f7;font-size:14px;font-weight:600;">TOTAL À PAYER</span>
-      <span style="color:#fff;font-size:22px;font-weight:800;">${formaterPrixFCFA(total)}</span>
-    </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+          ${lignesHtml}
+        </table>
 
-    <!-- Livraison -->
-    <div style="margin-top:24px;border:1px solid #e8eef5;border-radius:8px;padding:16px;">
-      <div style="font-size:12px;font-weight:700;color:#185FA5;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Adresse de livraison</div>
-      <p style="margin:4px 0;font-size:14px;color:#333;"><strong>${client.nom}</strong></p>
-      <p style="margin:4px 0;font-size:14px;color:#555;">${client.adresse}</p>
-      <p style="margin:4px 0;font-size:14px;color:#555;">📞 ${client.telephone}</p>
-      ${client.email ? `<p style="margin:4px 0;font-size:14px;color:#555;">✉️ ${client.email}</p>` : ''}
-    </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+          ${ligneMontant('Sous-total', formaterPrixFCFA(sousTotal))}
+          ${reduction ? ligneMontant('Réduction', '-' + formaterPrixFCFA(reduction), '#1E8E5A') : ''}
+          ${ligneMontant('Livraison', fraisLivraison ? formaterPrixFCFA(fraisLivraison) : 'Offerte')}
+          <tr>
+            <td style="padding:14px 0 0;border-top:1px solid #E6ECF3;font-size:16px;font-weight:700;color:#1F2D3D;">Total</td>
+            <td align="right" style="padding:14px 0 0;border-top:1px solid #E6ECF3;font-size:20px;font-weight:800;color:#8B2FC9;">${formaterPrixFCFA(total)}</td>
+          </tr>
+        </table>
 
-    <!-- Bouton -->
-    <div style="text-align:center;margin-top:28px;">
-      <a href="${FRONTEND_URL}/compte.html" style="display:inline-block;background:#185FA5;color:#fff;padding:14px 32px;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">Suivre ma commande →</a>
-    </div>
-  </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;background:#FFF9E8;border-left:4px solid #FFC94A;border-radius:6px;">
+          <tr><td style="padding:14px 16px;font-size:14px;line-height:1.55;color:#5C4A12;"><strong>${esc(libellePaiement)}</strong><br>${esc(messagePaiement)}</td></tr>
+        </table>
 
-  <!-- Pied de page -->
-  <div style="background:#f0f4f8;padding:20px 28px;text-align:center;border-top:1px solid #e8eef5;">
-    <p style="margin:0;font-size:12px;color:#888;">Ce reçu est généré automatiquement par <strong>Hygia</strong>.</p>
-    <p style="margin:6px 0 0;font-size:12px;color:#aaa;">© ${new Date().getFullYear()} Hygia — Matériel médical professionnel à Bamako, Mali</p>
-  </div>
+        <p style="margin:24px 0 6px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#7A8CA3;">Livraison</p>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#44546A;">
+          <strong style="color:#1F2D3D;">${esc(client.nom)}</strong><br>
+          ${esc(client.adresse)}${client.commune ? ', ' + esc(client.commune) : ''}<br>
+          ${esc(client.telephone)}<br>
+          <span style="color:#7A8CA3;">Délai estimé : 24 à 48h à Bamako</span>
+        </p>
 
-</div>
-</body>
-</html>`;
+        ${boutonEmail(lienSuivi, 'Suivre ma commande')}`;
+
+    const html = gabaritEmail({ titre: sujet, apercu: `Commande ${numero} — Total ${formaterPrixFCFA(total)}. Merci pour votre confiance.`, contenu });
 
     return envoyerEmail({ to: email, subject: sujet, text: texte, html });
 }
