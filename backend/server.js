@@ -42,7 +42,7 @@ function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
 // Validation des URLs de redirection pour éviter les redirections ouvertes
 function isValidReturnUrl(url) {
     if (!url || typeof url !== 'string') return false;
-    const allowedPrefix = process.env.FRONTEND_URL || 'https://abdramanesanogo000-beep.github.io/sitehygia.github.io';
+    const allowedPrefix = process.env.FRONTEND_URL || 'https://www.hygiamali.com';
     return url === allowedPrefix || url.startsWith(allowedPrefix + '/');
 }
 

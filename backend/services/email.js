@@ -2,7 +2,7 @@ const { Resend } = require('resend');
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Hygia <onboarding@resend.dev>';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://abdramanesanogo000-beep.github.io/sitehygia.github.io';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://www.hygiamali.com';
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
