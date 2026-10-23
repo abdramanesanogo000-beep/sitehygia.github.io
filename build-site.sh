@@ -6,7 +6,7 @@ set -euo pipefail
 rm -rf public
 mkdir -p public
 
-cp ./*.html yames.js yames.css robots.txt sitemap.xml public/
+cp ./*.html yames.js yames.css robots.txt sitemap.xml favicon.ico public/
 cp -r img public/
 find public/img -name '*.crdownload' -delete
 
