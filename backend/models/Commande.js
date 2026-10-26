@@ -88,7 +88,18 @@ const commandeSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    // Moneroo transaction ID (actif)
+    // LigdiCash : identifiant marchand envoyé dans custom_data, et token de la facture (sert à appeler confirm)
+    ligdicash_transaction_id: {
+        type: String,
+        default: '',
+        index: true
+    },
+    ligdicash_token: {
+        type: String,
+        default: '',
+        select: false
+    },
+    // Moneroo transaction ID (historique)
     moneroo_transaction_id: {
         type: String,
         default: ''

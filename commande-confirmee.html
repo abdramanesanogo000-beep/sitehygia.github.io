@@ -372,7 +372,7 @@
                 <div class="conf-body">
                     <div class="conf-note echec">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        <span>Vous pouvez réessayer depuis votre panier ou choisir le paiement à la livraison. Si le problème persiste, contactez-nous.</span>
+                        <span>Votre panier a été conservé : vous pouvez réessayer ou choisir le paiement à la livraison. Si le problème persiste, contactez-nous.</span>
                     </div>
                     <div class="conf-actions">
                         <a href="panier.html" class="conf-btn primaire">Réessayer</a>
@@ -432,7 +432,19 @@
                 if (el) el.textContent = valeur;
             }
 
+            // Panier mis de côté avant la redirection vers LigdiCash (voir yames.js)
+            function gererPanierPaiement(echec) {
+                try {
+                    const sauvegarde = JSON.parse(localStorage.getItem("hygia-panier-paiement") || "null");
+                    if (!sauvegarde || sauvegarde.ref !== ref) return;
+                    const panierActuel = JSON.parse(localStorage.getItem("panier") || "[]");
+                    if (echec && panierActuel.length === 0) localStorage.setItem("panier", JSON.stringify(sauvegarde.panier || []));
+                    localStorage.removeItem("hygia-panier-paiement");
+                } catch {}
+            }
+
             function afficherSucces(data) {
+                gererPanierPaiement(false);
                 const estLivraison = String(data.modePaiement || "").toLowerCase().includes("livraison");
                 const statut = document.getElementById("ok-statut");
 
@@ -469,6 +481,7 @@
                     const data = await response.json();
 
                     if (response.status === 404 || data?.statut === "Paiement échoué") {
+                        gererPanierPaiement(true);
                         afficherEtat("etat-echec");
                         return;
                     }

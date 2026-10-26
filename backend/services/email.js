@@ -149,9 +149,11 @@ async function envoyerEmailRecapCommande(commande) {
     const libellePaiement = estLivraison ? 'Paiement à la livraison' : `Paiement en ligne (${modePaiement})`;
     const messagePaiement = estLivraison
         ? `Préparez ${formaterPrixFCFA(total)} pour le livreur à la réception.`
-        : 'Votre commande sera préparée dès la confirmation de votre paiement.';
+        : commande.paiement_confirme
+            ? 'Votre paiement a bien été reçu. Nous préparons votre commande.'
+            : 'Votre commande sera préparée dès la confirmation de votre paiement.';
 
-    // L'email part à la création de la commande, avant un éventuel paiement en ligne : on parle de commande « reçue »
+    // L'email part à la création de la commande (ou à la confirmation d'un paiement en ligne) : on parle de commande « reçue »
     const sujet = `Commande ${numero} reçue — Hygia`;
 
     const dateFormatee = new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });

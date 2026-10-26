@@ -140,7 +140,7 @@
                     <p>Choisissez comment vous souhaitez régler votre commande.</p>
                 </div>
 
-                <div class="paiement-groupe-titre">Paiement en ligne <span class="paiement-bientot">Bientôt disponible</span></div>
+                <div class="paiement-groupe-titre">Paiement en ligne <span class="paiement-bientot" id="paiement-bientot">Bientôt disponible</span></div>
                 <div class="paiement-options paiement-en-ligne">
                     <label class="paiement-option indisponible">
                         <input type="radio" name="paiement" value="orange" disabled>
@@ -148,29 +148,18 @@
                             <span class="paiement-radio" aria-hidden="true"></span>
                             <span class="paiement-texte">
                                 <span class="paiement-label">Orange Money</span>
-                                <span class="paiement-desc">Validation sur votre téléphone</span>
+                                <span class="paiement-desc">Paiement sécurisé via LigdiCash, validé sur votre téléphone</span>
                             </span>
                             <span class="paiement-logo logo-orange" aria-hidden="true">OM</span>
                         </span>
                     </label>
-                    <label class="paiement-option indisponible">
-                        <input type="radio" name="paiement" value="wave" disabled>
-                        <span class="paiement-option-content">
-                            <span class="paiement-radio" aria-hidden="true"></span>
-                            <span class="paiement-texte">
-                                <span class="paiement-label">Wave</span>
-                                <span class="paiement-desc">Paiement mobile rapide</span>
-                            </span>
-                            <span class="paiement-logo logo-wave" aria-hidden="true">W</span>
-                        </span>
-                    </label>
-                    <label class="paiement-option indisponible">
+                    <label class="paiement-option indisponible" id="option-carte" style="display:none">
                         <input type="radio" name="paiement" value="carte" disabled>
                         <span class="paiement-option-content">
                             <span class="paiement-radio" aria-hidden="true"></span>
                             <span class="paiement-texte">
                                 <span class="paiement-label">Carte bancaire</span>
-                                <span class="paiement-desc">Visa, Mastercard</span>
+                                <span class="paiement-desc">Visa, Mastercard (3D Secure)</span>
                             </span>
                             <span class="paiement-logo logo-carte" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>

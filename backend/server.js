@@ -60,7 +60,8 @@ function cleanExpiredIdempotencyKeys() {
 }
 
 function checkIdempotencyKey(req, res, next) {
-    const key = req.headers['idempotency-key'];
+    // Clé propre à chaque route : la même clé sert à créer la commande puis à lancer son paiement
+    const key = req.headers['idempotency-key'] ? `${req.path}:${req.headers['idempotency-key']}` : '';
     if (key) {
         cleanExpiredIdempotencyKeys();
         if (idempotencyKeys.has(key)) {
@@ -116,7 +117,7 @@ if (!configAdminValide()) {
 app.use(cors({
     origin: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Cle-Suivi']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Cle-Suivi', 'X-Test-Paiement']
 }));
 app.use(helmet({
     crossOriginResourcePolicy: false,
@@ -167,10 +168,26 @@ app.use((req, res, next) => {
 
 const REDUCTION_CLIENT_PARTENAIRE = 5; // % de réduction client sur code partenaire
 
-// Paiement en ligne (Mobile Money / carte via Moneroo) : désactivé tant que
+// Paiement en ligne (Orange Money / carte via LigdiCash) : désactivé tant que
 // la variable Render PAIEMENT_EN_LIGNE_ACTIF n'est pas égale à "true"
 const PAIEMENT_EN_LIGNE_ACTIF = process.env.PAIEMENT_EN_LIGNE_ACTIF === 'true';
+const PAIEMENT_CARTE_ACTIF = process.env.PAIEMENT_CARTE_ACTIF === 'true';
 const MESSAGE_PAIEMENT_EN_LIGNE_INACTIF = 'Le paiement en ligne est momentanément indisponible. Choisissez le paiement à la livraison.';
+
+// Mode test : paiement en ligne réservé à qui ouvre le site avec ?test-paiement=CODE
+// (en-tête X-Test-Paiement), pour l'intégration LigdiCash sans l'ouvrir aux clients
+function paiementEnLigneAutorise(req) {
+    if (PAIEMENT_EN_LIGNE_ACTIF) return true;
+    const code = process.env.PAIEMENT_EN_LIGNE_TEST_CODE || '';
+    const recu = String(req.headers['x-test-paiement'] || '');
+    return code.length >= 12 && recu.length === code.length &&
+        crypto.timingSafeEqual(Buffer.from(recu), Buffer.from(code));
+}
+
+// Configuration publique lue par le site (affichage des moyens de paiement)
+app.get('/api/config', (req, res) => {
+    res.json({ paiementEnLigne: PAIEMENT_EN_LIGNE_ACTIF, paiementCarte: PAIEMENT_CARTE_ACTIF });
+});
 
 // Calcule la commission d'un partenaire selon les paliers de chiffre d'affaires généré
 function calculerCommission(totalFCFA) {
@@ -659,7 +676,7 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
         }
 
         // Paiement en ligne suspendu : aucune commande « en attente de paiement » n'est créée
-        if (!PAIEMENT_EN_LIGNE_ACTIF && !modePaiement.toLowerCase().includes('livraison')) {
+        if (!paiementEnLigneAutorise(req) && !modePaiement.toLowerCase().includes('livraison')) {
             return res.status(400).json({ erreur: MESSAGE_PAIEMENT_EN_LIGNE_INACTIF });
         }
 
@@ -780,21 +797,13 @@ app.post('/api/commandes', checkIdempotencyKey, async (req, res) => {
 
         await commande.save();
 
-        // Attribution des points de fidélité si le client a un compte
-        try {
-            if (commande.client.email) {
-                await Utilisateur.findOneAndUpdate(
-                    { email: commande.client.email.toLowerCase().trim() },
-                    { $inc: { pointsFidelite: Math.max(0, Math.floor(commande.total / 1000)) } }
-                );
-            }
-        } catch (err) {
-            console.error('Erreur attribution points fidélité :', err);
+        // Paiement en ligne : email et points fidélité seulement une fois le paiement confirmé
+        if (estPaiementLivraison) {
+            await attribuerPointsFidelite(commande);
+            envoyerEmailRecapCommande(commande).catch(err => {
+                console.error('Erreur email confirmation commande :', err);
+            });
         }
-
-        envoyerEmailRecapCommande(commande).catch(err => {
-            console.error('Erreur email confirmation commande :', err);
-        });
 
         return res.status(201).json({
             succes: true,
@@ -1199,170 +1208,235 @@ app.delete('/api/admin/produits/:id', verifierAdmin, async (req, res) => {
 });
 
 // ===========================================
-// PAIEMENT MONEROO
+// PAIEMENT EN LIGNE — LIGDICASH (payin avec redirection)
+// Doc : https://developers.ligdicash.com
 // ===========================================
 
-// ===========================================
-// INTÉGRATION MONEROO (MODE ACTIF)
-// ===========================================
+const LIGDICASH_BASE_URL = process.env.LIGDICASH_BASE_URL || 'https://app.ligdicash.com';
+const LIGDICASH_API_KEY = process.env.LIGDICASH_API_KEY;
+const LIGDICASH_API_TOKEN = process.env.LIGDICASH_API_TOKEN;
+const BACKEND_PUBLIC_URL = process.env.BACKEND_URL || 'https://hygia-backend.onrender.com';
 
-const MONEROO_API_URL = 'https://api.moneroo.io/v1/payments/initialize';
-const MONEROO_SECRET_KEY = process.env.MONEROO_SECRET_KEY;
+async function appelLigdicash(chemin, options = {}) {
+    const response = await fetchWithTimeout(`${LIGDICASH_BASE_URL}${chemin}`, {
+        ...options,
+        headers: {
+            Apikey: LIGDICASH_API_KEY,
+            Authorization: `Bearer ${LIGDICASH_API_TOKEN}`,
+            Accept: 'application/json',
+            ...(options.body ? { 'Content-Type': 'application/json' } : {})
+        }
+    }, 15000);
+    return response.json();
+}
 
-// Initier un paiement Moneroo (Orange Money, Moov Money, Mobi Cash au Mali)
+// La page de paiement doit être une URL https LigdiCash (jamais de redirection ouverte)
+function urlPaiementLigdicashValide(url) {
+    try {
+        const u = new URL(url);
+        return u.protocol === 'https:' && (u.hostname === 'ligdicash.com' || u.hostname.endsWith('.ligdicash.com'));
+    } catch {
+        return false;
+    }
+}
+
+async function attribuerPointsFidelite(commande) {
+    try {
+        if (commande.client?.email) {
+            await Utilisateur.findOneAndUpdate(
+                { email: commande.client.email.toLowerCase().trim() },
+                { $inc: { pointsFidelite: Math.max(0, Math.floor(commande.total / 1000)) } }
+            );
+        }
+    } catch (err) {
+        console.error('Erreur attribution points fidélité :', err);
+    }
+}
+
+// Commande impayée (paiement refusé, annulé ou impossible à lancer) : statut « Paiement échoué »
+// et remise en stock, une seule fois grâce à la condition sur le statut
+async function marquerPaiementEchoue(commandeId) {
+    const commande = await Commande.findOneAndUpdate(
+        { _id: commandeId, statut: 'En attente paiement', paiement_confirme: false },
+        { $set: { statut: 'Paiement échoué' } },
+        { new: true }
+    );
+    if (!commande) return null;
+    for (const article of commande.articles) {
+        await Produit.findOneAndUpdate({ id: article.id }, { $inc: { quantiteEnStock: article.quantite } });
+    }
+    console.log('❌ Paiement non abouti, stock remis : ' + commande.numero);
+    return commande;
+}
+
+// Seule source de vérité : l'endpoint confirm appelé avec le token stocké à la création.
+// Ni le callback ni l'URL de retour ne suffisent à valider un paiement.
+async function verifierPaiementLigdicash(commandeId) {
+    const commande = await Commande.findById(commandeId).select('+ligdicash_token');
+    if (!commande || !commande.ligdicash_token || commande.paiement_confirme || commande.statut !== 'En attente paiement') {
+        return commande;
+    }
+
+    const data = await appelLigdicash(
+        `/pay/v01/redirect/checkout-invoice/confirm/?invoiceToken=${encodeURIComponent(commande.ligdicash_token)}`,
+        { method: 'GET' }
+    );
+
+    if (data.response_code !== '00') {
+        console.error(`LigdiCash confirm en erreur (${commande.numero}) :`, data.response_text, data.wiki);
+        return commande;
+    }
+
+    if (data.status === 'completed') {
+        const montant = Number(data.montant ?? data.amount);
+        if (!(montant >= commande.total)) {
+            console.error(`⚠️ LigdiCash : montant payé ${montant} inférieur au total ${commande.total} (${commande.numero}). Commande laissée en attente.`);
+            return commande;
+        }
+        const confirmee = await Commande.findOneAndUpdate(
+            { _id: commande._id, statut: 'En attente paiement', paiement_confirme: false },
+            { $set: { statut: 'Confirmée', paiement_confirme: true, montant_paye: montant } },
+            { new: true }
+        );
+        if (confirmee) {
+            console.log(`✅ Paiement LigdiCash confirmé : ${confirmee.numero} (${data.operator_name || 'opérateur inconnu'})`);
+            await attribuerPointsFidelite(confirmee);
+            envoyerEmailRecapCommande(confirmee).catch(err => console.error('Erreur email récap commande :', err));
+            return confirmee;
+        }
+        return Commande.findById(commande._id);
+    }
+
+    if (data.status === 'notcompleted') {
+        return (await marquerPaiementEchoue(commande._id)) || Commande.findById(commande._id);
+    }
+
+    return commande; // pending : on attend le callback suivant
+}
+
+// Lancer le paiement d'une commande déjà créée (statut « En attente paiement »)
 app.post('/api/paiement/initier', checkIdempotencyKey, async (req, res) => {
-    if (!PAIEMENT_EN_LIGNE_ACTIF) {
+    if (!paiementEnLigneAutorise(req)) {
         return res.status(403).json({ succes: false, erreur: MESSAGE_PAIEMENT_EN_LIGNE_INACTIF });
     }
+    if (!LIGDICASH_API_KEY || !LIGDICASH_API_TOKEN) {
+        console.error('LigdiCash : LIGDICASH_API_KEY ou LIGDICASH_API_TOKEN manquant.');
+        return res.status(503).json({ succes: false, erreur: MESSAGE_PAIEMENT_EN_LIGNE_INACTIF });
+    }
+
+    let commande;
     try {
-        const { commande_id, montant, client, methode } = req.body;
-
-        if (!commande_id || !montant || !client) {
-            return res.status(400).json({ succes: false, erreur: 'Données de paiement incomplètes.' });
+        commande = await Commande.findOne({ numero: String(req.body.commande_id || '') }).select('+cle_suivi');
+        if (!commande || !peutConsulterCommande(req, commande)) {
+            return res.status(404).json({ succes: false, erreur: 'Commande introuvable.' });
+        }
+        if (commande.paiement_confirme || commande.statut !== 'En attente paiement') {
+            return res.status(409).json({ succes: false, erreur: 'Cette commande ne peut plus être payée en ligne.' });
         }
 
-        if (!MONEROO_SECRET_KEY) {
-            return res.status(500).json({ succes: false, erreur: 'Clé Moneroo non configurée.' });
-        }
-
-        // Mapper la méthode de paiement aux codes Moneroo pour le Mali
-        let methods = [];
-        if (methode === 'orange') {
-            methods = ['orange_ml'];
-        } else if (methode === 'wave') {
-            // Wave utilise Orange Money via Moneroo
-            methods = ['orange_ml'];
-        } else if (methode === 'moov') {
-            methods = ['moov_ml'];
-        } else if (methode === 'mobicash') {
-            // Mobicash Mali
-            methods = ['mobi_cash_ml'];
-        } else {
-            // Si aucune méthode spécifique, autoriser les méthodes Mali valides
-            methods = ['orange_ml', 'moov_ml', 'mobi_cash_ml'];
-        }
-
-        const returnUrl = `${process.env.FRONTEND_URL}/commande-confirmee.html?ref=${commande_id}`;
-        if (!isValidReturnUrl(returnUrl)) {
+        const urlRetour = `${process.env.FRONTEND_URL || 'https://www.hygiamali.com'}/commande-confirmee.html?ref=${encodeURIComponent(commande.numero)}`;
+        if (!isValidReturnUrl(urlRetour)) {
             return res.status(400).json({ succes: false, erreur: 'URL de retour invalide.' });
         }
 
-        const payload = {
-            amount: Math.round(montant),
-            currency: 'XOF',
-            description: `Commande Hygia ${commande_id}`,
-            return_url: returnUrl,
-            customer: {
-                // Moneroo exige un email : repli sur l'email de la boutique si le client n'en a pas
-                email: client.email || process.env.MONEROO_FALLBACK_EMAIL || process.env.EMAIL_FROM || '',
-                first_name: client.nom || 'Client',
-                last_name: client.prenom || 'Hygia',
-                phone: client.telephone || ''
-            },
-            metadata: {
-                commande_id: commande_id,
-                client_nom: client.nom,
-                client_tel: client.telephone,
-                methode: methode
-            },
-            methods: methods
-        };
+        // Pattern transaction_id : notre identifiant est enregistré AVANT l'appel à LigdiCash
+        const transactionId = `${commande.numero}-${crypto.randomBytes(4).toString('hex')}`;
+        await Commande.updateOne({ _id: commande._id }, { $set: { ligdicash_transaction_id: transactionId, ligdicash_token: '' } });
 
-        console.log('Moneroo Initialize Request:', payload);
-
-        const response = await fetchWithTimeout(MONEROO_API_URL, {
+        const [prenom, ...nom] = String(commande.client?.nom || 'Client Hygia').trim().split(/\s+/);
+        const total = Math.round(commande.total);
+        const data = await appelLigdicash('/pay/v01/redirect/checkout-invoice/create', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${MONEROO_SECRET_KEY}`,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        }, 15000); // Timeout 15s pour Moneroo
-
-        const data = await response.json();
-        console.log('Moneroo Initialize Response:', data);
-
-        if ((data.success || data.message === 'Transaction initialized successfully') && data.data && data.data.checkout_url) {
-            // Mettre à jour la commande avec l'ID de transaction Moneroo
-            await Commande.findOneAndUpdate(
-                { numero: commande_id },
-                {
-                    $set: {
-                        moneroo_transaction_id: data.data.id || '',
-                        statut: 'En attente paiement',
-                        paiement_confirme: false
-                    }
+            body: JSON.stringify({
+                commande: {
+                    invoice: {
+                        items: [{
+                            name: `Commande Hygia ${commande.numero}`,
+                            description: `${commande.articles.length} article(s)`,
+                            quantity: 1,
+                            unit_price: total,
+                            total_price: total
+                        }],
+                        total_amount: total,
+                        devise: 'XOF',
+                        description: `Commande Hygia ${commande.numero}`,
+                        customer: '', // vide : sinon la page n'affiche que l'opérateur du numéro
+                        customer_firstname: prenom || 'Client',
+                        customer_lastname: nom.join(' ') || 'Hygia',
+                        customer_email: commande.client?.email || '',
+                        external_id: '',
+                        otp: ''
+                    },
+                    store: { name: 'Hygia', website_url: process.env.FRONTEND_URL || 'https://www.hygiamali.com' },
+                    actions: {
+                        return_url: urlRetour,
+                        cancel_url: urlRetour, // la page de confirmation revérifie le statut réel dans les deux cas
+                        callback_url: `${BACKEND_PUBLIC_URL}/api/paiement/ligdicash-callback`
+                    },
+                    custom_data: { transaction_id: transactionId }
                 }
-            );
+            })
+        });
 
-            return res.json({
-                succes: true,
-                redirect_url: data.data.checkout_url,
-                transaction_id: data.data.id
-            });
+        if (data.response_code === '00' && data.token && urlPaiementLigdicashValide(data.response_text)) {
+            await Commande.updateOne({ _id: commande._id }, { $set: { ligdicash_token: data.token } });
+            return res.json({ succes: true, redirect_url: data.response_text });
         }
 
-        console.error('Erreur Moneroo /v1/payments/initialize :', data);
-        return res.status(400).json({ succes: false, erreur: 'Erreur initialisation paiement', details: data });
+        console.error(`LigdiCash createInvoice refusé (${commande.numero}) :`, data.response_text, data.wiki);
     } catch (error) {
-        console.error('Erreur POST /api/paiement/initier (Moneroo) :', error);
-        return res.status(500).json({ succes: false, erreur: 'Erreur serveur' });
+        console.error('Erreur POST /api/paiement/initier (LigdiCash) :', error);
     }
+
+    // Paiement impossible à lancer : on libère le stock pour que le client puisse recommander
+    if (commande?._id) await marquerPaiementEchoue(commande._id).catch(() => {});
+    return res.status(502).json({ succes: false, erreur: MESSAGE_PAIEMENT_EN_LIGNE_INACTIF });
 });
 
-// Webhook Moneroo — notification automatique après paiement
-app.post('/api/paiement/moneroo-webhook', async (req, res) => {
+// custom_data arrive en tableau (JSON), parfois en objet ou en chaîne (envoi form-urlencoded)
+function lireTransactionIdCallback(body) {
+    let customData = body?.custom_data;
+    if (typeof customData === 'string') {
+        try { customData = JSON.parse(customData); } catch { customData = []; }
+    }
+    const entrees = Array.isArray(customData) ? customData : Object.values(customData || {});
+    const entree = entrees.find(e => e && e.keyof_customdata === 'transaction_id');
+    return String(entree?.valueof_customdata || body?.external_id || '').trim();
+}
+
+// Callback LigdiCash : envoyé deux fois (JSON puis form-urlencoded). On répond 200 tout de suite,
+// puis on revérifie avec confirm : un faux callback ne peut donc rien valider.
+app.post('/api/paiement/ligdicash-callback', express.urlencoded({ extended: true }), async (req, res) => {
+    res.status(200).json({ ok: true });
     try {
-        const { data } = req.body;
-
-        console.log('Moneroo Webhook reçu:', { event: req.body?.event, transaction_id: req.body?.data?.id, status: req.body?.data?.status });
-
-        if (!data || !data.id) {
-            return res.status(200).json({ status: 'ok' });
-        }
-
-        // Trouver la commande par transaction_id
-        const commande = await Commande.findOne({ moneroo_transaction_id: data.id });
-
+        const transactionId = lireTransactionIdCallback(req.body);
+        if (!transactionId) return;
+        const commande = await Commande.findOne({ ligdicash_transaction_id: transactionId }).select('_id');
         if (!commande) {
-            console.log('⚠️ Webhook Moneroo : commande introuvable pour transaction_id ' + data.id);
-            return res.status(200).json({ status: 'ok' });
+            console.log('⚠️ Callback LigdiCash non sollicité ignoré : ' + transactionId);
+            return;
         }
-
-        if (data.status === 'success') {
-            // Empêcher le replay d'un paiement déjà confirmé
-            if (commande.statut === 'Confirmée' || commande.statut === 'En livraison' || commande.statut === 'Livrée') {
-                console.log('⚠️ Webhook Moneroo ignoré : commande déjà traitée ' + commande.numero);
-                return res.status(200).json({ status: 'ok' });
-            }
-
-            const commandeConfirmee = await Commande.findOneAndUpdate(
-                { moneroo_transaction_id: data.id },
-                { $set: { statut: 'Confirmée', paiement_confirme: true } },
-                { new: true }
-            );
-            console.log('✅ Paiement Moneroo confirmé : ' + commande.numero);
-
-            if (commandeConfirmee) {
-                envoyerEmailRecapCommande(commandeConfirmee).catch(err => {
-                    console.error('Erreur email récap commande :', err);
-                });
-            }
-        } else if (data.status === 'failed' || data.status === 'cancelled') {
-            await Commande.findOneAndUpdate(
-                { moneroo_transaction_id: data.id },
-                { $set: { statut: 'Paiement échoué', paiement_confirme: false } }
-            );
-            console.log('❌ Paiement Moneroo échoué : ' + commande.numero);
-        }
-
-        return res.status(200).json({ status: 'ok' });
+        await verifierPaiementLigdicash(commande._id);
     } catch (error) {
-        console.error('Erreur POST /api/paiement/moneroo-webhook :', error);
-        return res.status(200).json({ status: 'ok' });
+        console.error('Erreur callback LigdiCash :', error);
     }
 });
+
+// Filet de sécurité si un callback se perd : revérification des paiements en attente
+async function reverifierPaiementsEnAttente() {
+    if (!LIGDICASH_API_KEY || !LIGDICASH_API_TOKEN || mongoose.connection.readyState !== 1) return;
+    const maintenant = Date.now();
+    const enAttente = await Commande.find({
+        statut: 'En attente paiement',
+        paiement_confirme: false,
+        ligdicash_transaction_id: { $ne: '' },
+        date: { $lte: new Date(maintenant - 5 * 60 * 1000), $gte: new Date(maintenant - 48 * 60 * 60 * 1000) }
+    }).select('_id').limit(20);
+    for (const c of enAttente) {
+        await verifierPaiementLigdicash(c._id).catch(err => console.error('Revérification LigdiCash :', err.message));
+    }
+}
+setInterval(() => reverifierPaiementsEnAttente().catch(() => {}), 10 * 60 * 1000).unref();
 
 // ===========================================
 // INTÉGRATION PAYTECH (MODE PAUSE - COMMENTÉ)
@@ -1744,7 +1818,7 @@ app.get('/api/paiement/statut', async (req, res) => {
             return res.status(400).json({ erreur: 'Référence manquante.' });
         }
 
-        const commande = await Commande.findOne({ numero: ref }).select('+cle_suivi');
+        let commande = await Commande.findOne({ numero: ref }).select('+cle_suivi');
 
         if (!commande) {
             return res.status(404).json({ erreur: 'Commande introuvable' });
@@ -1753,6 +1827,15 @@ app.get('/api/paiement/statut', async (req, res) => {
         // Sans preuve d'accès : uniquement le statut, aucune donnée personnelle
         if (!peutConsulterCommande(req, commande)) {
             return res.json({ statut: commande.statut, numero: commande.numero });
+        }
+
+        // Retour depuis la page LigdiCash : on interroge LigdiCash sans attendre le callback
+        if (commande.statut === 'En attente paiement' && commande.ligdicash_transaction_id && LIGDICASH_API_KEY && LIGDICASH_API_TOKEN) {
+            try {
+                commande = (await verifierPaiementLigdicash(commande._id)) || commande;
+            } catch (err) {
+                console.error('Vérification LigdiCash depuis /api/paiement/statut :', err.message);
+            }
         }
 
         return res.json({

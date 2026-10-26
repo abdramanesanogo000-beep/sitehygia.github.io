@@ -1641,9 +1641,46 @@ function validerFormulaireLivraison() {
 
 let commandeEnCours = false;
 
-// Paiement en ligne (Mobile Money / carte) suspendu : seul le paiement à la livraison est accepté.
-// Pour le réactiver : passer à true ici, retirer "disabled" dans panier.html et PAIEMENT_EN_LIGNE_ACTIF=true sur Render.
-const PAIEMENT_EN_LIGNE_ACTIF = false;
+// Paiement en ligne (Orange Money / carte via LigdiCash) : activé par le serveur
+// (PAIEMENT_EN_LIGNE_ACTIF=true sur Render) ou, pour les tests, en ouvrant le site avec ?test-paiement=CODE
+let PAIEMENT_EN_LIGNE_ACTIF = false;
+const TEST_PAIEMENT_KEY = "hygia-test-paiement";
+const PANIER_PAIEMENT_KEY = "hygia-panier-paiement";
+
+function codeTestPaiement() {
+    const code = new URLSearchParams(window.location.search).get("test-paiement");
+    if (code) sessionStorage.setItem(TEST_PAIEMENT_KEY, code);
+    return sessionStorage.getItem(TEST_PAIEMENT_KEY) || "";
+}
+
+function entetesPaiement(base = {}) {
+    const code = codeTestPaiement();
+    return code ? { ...base, "X-Test-Paiement": code } : base;
+}
+
+async function initialiserMoyensPaiement() {
+    const blocEnLigne = document.querySelector(".paiement-en-ligne");
+    if (!blocEnLigne) return;
+    let config = {};
+    try {
+        config = await (await fetch(`${BACKEND_URL}/api/config`)).json();
+    } catch {}
+    PAIEMENT_EN_LIGNE_ACTIF = Boolean(config.paiementEnLigne || codeTestPaiement());
+    if (!PAIEMENT_EN_LIGNE_ACTIF) return;
+
+    const activer = (input) => {
+        input.disabled = false;
+        input.closest(".paiement-option")?.classList.remove("indisponible");
+    };
+    blocEnLigne.querySelectorAll('input[value="orange"]').forEach(activer);
+    if (config.paiementCarte) {
+        const optionCarte = document.getElementById("option-carte");
+        if (optionCarte) optionCarte.style.display = "";
+        blocEnLigne.querySelectorAll('input[value="carte"]').forEach(activer);
+    }
+    const badge = document.getElementById("paiement-bientot");
+    if (badge) badge.style.display = "none";
+}
 
 async function confirmerCommande(methode) {
     if (!PAIEMENT_EN_LIGNE_ACTIF && methode !== "livraison") {
@@ -1717,10 +1754,10 @@ async function confirmerCommande(methode) {
             modePaiement: MODES_PAIEMENT_LABELS[methode] || methode
         };
 
-        const headersCommande = {
+        const headersCommande = entetesPaiement({
             "Content-Type": "application/json",
             "Idempotency-Key": idempotencyKey
-        };
+        });
         // Rattache la commande au compte du client connecté
         if (getAccessToken()) headersCommande["Authorization"] = `Bearer ${getAccessToken()}`;
 
@@ -1769,62 +1806,44 @@ async function confirmerCommande(methode) {
         return;
     }
 
-    console.log("DEBUG: Paiement en ligne, appel Moneroo");
-
-    // ÉTAPE 2 : Initier le paiement Moneroo
+    // ÉTAPE 2 : lancer le paiement LigdiCash (le montant est recalculé par le serveur)
+    let paymentData = {};
     try {
-        console.log("DEBUG: Appel Moneroo avec commande_id =", numeroCommande, "montant =", totalCommande);
+        const headersPaiement = entetesPaiement({
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotencyKey
+        });
+        if (data.cle_suivi) headersPaiement["X-Cle-Suivi"] = data.cle_suivi;
+        if (getAccessToken()) headersPaiement["Authorization"] = `Bearer ${getAccessToken()}`;
+
         const res = await fetch(`${BACKEND_URL}/api/paiement/initier`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Idempotency-Key": idempotencyKey
-            },
-            body: JSON.stringify({
-                commande_id: numeroCommande,
-                montant: totalCommande,
-                client: {
-                    nom: nomClient,
-                    telephone: telClient,
-                    email: emailClient || getUtilisateurConnecte()?.email || ""
-                },
-                methode: methode
-            })
+            headers: headersPaiement,
+            body: JSON.stringify({ commande_id: numeroCommande })
         });
-
-        const paymentData = await res.json();
-        console.log("DEBUG: Réponse Moneroo =", paymentData);
-
-        if (paymentData.succes && paymentData.redirect_url) {
-            // Sauvegarder dans l'historique local avant redirection
-            enregistrerCommande(panier, methode, totalCommande);
-            savePanier([]);
-            mettreAJourCompteurPanier();
-
-            // Rediriger vers la page de paiement Moneroo
-            window.location.href = paymentData.redirect_url;
-            return;
-
-        } else {
-            // Si le paiement électronique n'est pas disponible
-            enregistrerCommande(panier, methode, totalCommande);
-            savePanier([]);
-            mettreAJourCompteurPanier();
-            afficherToast(paymentData.erreur || "Erreur initialisation paiement", "error");
-            window.location.href = `commande-confirmee.html?ref=${encodeURIComponent(numeroCommande)}`;
-        }
-
+        paymentData = await res.json();
     } catch (err) {
-        hideSyphaLoader();
-        commandeEnCours = false;
-        console.error("Erreur Moneroo:", err);
-        // Même comportement en cas d'erreur réseau
+        console.error("Erreur paiement LigdiCash :", err);
+    }
+
+    if (paymentData.succes && paymentData.redirect_url) {
+        // Panier gardé de côté : restauré par commande-confirmee.html si le paiement échoue
+        localStorage.setItem(PANIER_PAIEMENT_KEY, JSON.stringify({ ref: numeroCommande, panier }));
         enregistrerCommande(panier, methode, totalCommande);
         savePanier([]);
         mettreAJourCompteurPanier();
-        afficherToast("Votre commande est enregistrée. Le paiement en ligne est momentanément indisponible.", "info");
-        window.location.href = `commande-confirmee.html?ref=${encodeURIComponent(numeroCommande)}`;
+        window.location.href = paymentData.redirect_url;
+        return;
     }
+
+    // Paiement impossible à lancer : le serveur a libéré la commande, le panier reste intact
+    hideSyphaLoader();
+    commandeEnCours = false;
+    if (btnPaiement) {
+        btnPaiement.textContent = tr("Procéder au paiement", "Proceed to payment");
+        btnPaiement.disabled = false;
+    }
+    afficherToast(paymentData.erreur || "Le paiement en ligne est momentanément indisponible. Choisissez le paiement à la livraison.", "error");
 }
 
 // ===========================================
@@ -3045,7 +3064,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- Système de paiement Moneroo ---
+    // --- Système de paiement (LigdiCash) ---
+    codeTestPaiement();
+    initialiserMoyensPaiement();
     const btnPaiement = document.getElementById("btn-paiement");
     const zoneLivraison = document.getElementById("livraison-zone");
 

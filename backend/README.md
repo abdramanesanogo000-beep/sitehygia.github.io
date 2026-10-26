@@ -28,11 +28,29 @@ BACKEND_URL=https://ton-url-render.onrender.com
 exister dans les variables d'environnement de Render (ou dans un fichier `.env`
 local non versionné).
 
-## Paiement en ligne (suspendu)
+## Paiement en ligne (LigdiCash)
 
-Le paiement en ligne (Mobile Money, carte via Moneroo) est désactivé : seules les commandes
-« Paiement à la livraison » sont acceptées. Pour le réactiver : `PAIEMENT_EN_LIGNE_ACTIF=true`
-dans Render, `PAIEMENT_EN_LIGNE_ACTIF = true` dans `yames.js`, et retirer `disabled` des options dans `panier.html`.
+Payin avec redirection (https://developers.ligdicash.com). Au Mali : Orange Money, et carte
+bancaire si le contrat carte est signé. Variables Render :
+
+| Variable | Rôle |
+|---|---|
+| `LIGDICASH_API_KEY` / `LIGDICASH_API_TOKEN` | Clés du projet API (compte d'intégration, puis production) |
+| `PAIEMENT_EN_LIGNE_ACTIF` | `true` = paiement en ligne ouvert à tous les clients |
+| `PAIEMENT_EN_LIGNE_TEST_CODE` | Code secret (12 caractères min.) : ouvrir le site avec `?test-paiement=CODE` pour payer en ligne sans l'ouvrir au public |
+| `PAIEMENT_CARTE_ACTIF` | `true` = affiche l'option carte bancaire |
+| `BACKEND_URL` | Adresse publique du backend, utilisée pour l'URL de callback |
+
+Fonctionnement :
+1. La commande est créée en « En attente paiement » (stock réservé, pas d'email).
+2. `POST /api/paiement/initier` crée la facture LigdiCash avec le total recalculé par le serveur
+   et un `transaction_id` enregistré avant l'appel ; le client est redirigé vers LigdiCash.
+3. LigdiCash appelle `POST /api/paiement/ligdicash-callback`. Le contenu du callback n'est jamais
+   cru : le serveur appelle `confirm` avec le token stocké.
+4. `completed` (montant ≥ total) → « Confirmée », email récapitulatif, points fidélité.
+   `notcompleted` → « Paiement échoué » et remise en stock.
+5. La page `commande-confirmee.html` revérifie aussi le statut au retour du client, et une
+   revérification automatique tourne toutes les 10 minutes si un callback se perd.
 
 ## A2F de l'administrateur (obligatoire)
 
