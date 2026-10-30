@@ -413,7 +413,7 @@ const staticTextEn = {
   "Paiement flexible": "Flexible payment",
   "Orange Money, Wave, carte bancaire  — vous choisissez ce qui vous convient le mieux.": "Orange Money, Wave, credit card — you choose what suits you best.",
   "Service client sur WhatsApp": "Customer service on WhatsApp",
-  "Une question sur un produit ? Besoin d'un devis pour une clinique ? Notre équipe vous répond rapidement sur WhatsApp au +223 72 08 09 37.": "A question about a product? Need a quote for a clinic? Our team responds quickly on WhatsApp at +223 72 08 09 37.",
+  "Une question sur un produit ? Besoin d'un devis pour une clinique ? Notre équipe vous répond rapidement sur WhatsApp au +223 61 26 72 20.": "A question about a product? Need a quote for a clinic? Our team responds quickly on WhatsApp at +223 61 26 72 20.",
   "Expertise du domaine médical": "Medical field expertise",
   "Nous connaissons le marché malien et les besoins réels des professionnels de santé. Nos conseils sont basés sur une vraie expérience du terrain.": "We know the Malian market and the real needs of healthcare professionals. Our advice is based on real field experience.",
   "Tarifs compétitifs": "Competitive rates",
@@ -3243,7 +3243,7 @@ if (form) {
                 afficherToast("Erreur lors de l'envoi. Contactez-nous sur WhatsApp.", "error");
             }
         } catch {
-            afficherToast("Erreur réseau. Contactez-nous sur WhatsApp au +223 72 08 09 37.", "error");
+            afficherToast("Erreur réseau. Contactez-nous sur WhatsApp au +223 61 26 72 20.", "error");
         } finally {
             hideSyphaLoader();
         }
